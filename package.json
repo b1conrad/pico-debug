@@ -1,0 +1,24 @@
+{
+  "name": "pico-debug",
+  "version": "0.0.1",
+  "description": "command line debugger for picos",
+  "main": "cli.js",
+  "scripts": {
+    "test": "pico"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/b1conrad/pico-debug.git"
+  },
+  "keywords": [
+    "debug",
+    "pico",
+    "KRL"
+  ],
+  "author": "Bruce Conrad",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/b1conrad/pico-debug/issues"
+  },
+  "homepage": "https://github.com/b1conrad/pico-debug#readme"
+}
