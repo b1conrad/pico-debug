@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/b1conrad/pico-debug/issues"
   },
-  "homepage": "https://github.com/b1conrad/pico-debug#readme"
+  "homepage": "https://github.com/b1conrad/pico-debug#readme",
+  "bin": {
+    "pico-debug": "./cli.js"
+  }
 }
