@@ -15,7 +15,9 @@ npm link
 pico-debug localhost:8080
 ```
 
-When prompted, enter a value URI for a pico running on that engine
+When prompted, enter a URI path for a pico hosted on that engine,
+and that request will be sent to the engine running at localhost:8080
+and the response will be displayed as `stdout`.
 
 Some things to try
 
