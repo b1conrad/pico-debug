@@ -27,10 +27,12 @@ Some things to try
 /sky/cloud/<ECI>/io.picolabs.visual_params/dname
 /sky/cloud/<ECI>/io.picolabs.wrangler/children
 /sky/event/<ECI>/<EID>/visual/update?dname=Bob&color=%2300FFFF
+/api/ruleset/flush/<RID>
 ```
 
 Where `<ECI>` means put an event channel identifier here, 
 and `<EID>` means provide an event identifier here,
-and `%23` is the encoding of the `#` symbol
+and `%23` is the encoding of the `#` symbol,
+and `<RID>` is a ruleset identifier
   
   
