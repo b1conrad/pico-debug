@@ -23,7 +23,7 @@ async function main () {
       break
     }
     console.log(`Your query is /${the_query}`)
-    let response = await fetch('http://localhost:8080/'+the_query)
+    let response = await fetch('http://localhost:8080/' + the_query)
     //console.log(JSON.stringify(response,null,2))
     if (response.status == 200) {
       let content_type = response.headers.get('content-type')
@@ -31,7 +31,7 @@ async function main () {
       if (/^application\/json;/.test(content_type)) {
         let json = await response.json()
         console.log(json)
-      } else if (/^text\//.test(content_type)) {
+      } else if (/^text\/plain/.test(content_type)) {
         let body = await response.text()
         console.log(body)
       } else {
