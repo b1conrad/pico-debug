@@ -17,20 +17,25 @@ async function main () {
   while (true) {
     let question = 'What is your query?'
     let result = await prompt2(question)
-    if (result[question] === 'exit') {
+    let the_query = result[question]
+    while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
+    if (the_query === 'exit') {
       break
     }
-    console.log(`Your query is ${result[question]}`)
-    let response = await fetch('http://localhost:8080'+result[question])
+    console.log(`Your query is /${the_query}`)
+    let response = await fetch('http://localhost:8080/'+the_query)
     //console.log(JSON.stringify(response,null,2))
     if (response.status == 200) {
-      console.log(response.headers.get('content-type'))
-      if (/^application\/json;/.test(response.headers.get('content-type'))) {
+      let content_type = response.headers.get('content-type')
+      //console.log(content_type)
+      if (/^application\/json;/.test(content_type)) {
         let json = await response.json()
         console.log(json)
-      } else {
+      } else if (/^text\//.test(content_type)) {
         let body = await response.text()
         console.log(body)
+      } else {
+        console.log(content_type)
       }
     } else {
       var msg = 'unknown error'
