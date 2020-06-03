@@ -12,8 +12,10 @@ npm link
 
 ## Usage
 ```
-pico-debug localhost:8080
+pico-debug http://localhost:8080
 ```
+
+The first argument must be a URL for a running pico-engine.
 
 When prompted, enter a URI path for a pico hosted on that engine,
 and that request will be sent to the engine running at localhost:8080
