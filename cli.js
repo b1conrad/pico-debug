@@ -5,6 +5,10 @@ const fetch = require('node-fetch')
 
 prompt.start()
 
+async function init_engine(url){
+  return url
+}
+
 function prompt2 (schema) {
   return new Promise(function (resolve, reject) {
     prompt.get(schema, function (err, result) {
@@ -13,7 +17,14 @@ function prompt2 (schema) {
   })
 }
 async function main () {
-  console.log(`Hello world of ${args}`)
+  //console.log(`Hello world of ${args}`)
+  if (/^https?:\/\//.test(args)) {
+    engine = await init_engine(args[0])
+    console.log(`pico-engine is running at ${engine}`)
+  } else {
+    console.log('Usage: pico-debug pico-engine')
+    process.exit(1)
+  }
   while (true) {
     let question = 'What is your query?'
     let result = await prompt2(question)
@@ -23,7 +34,7 @@ async function main () {
       break
     }
     console.log(`Your query is /${the_query}`)
-    let response = await fetch('http://localhost:8080/' + the_query)
+    let response = await fetch(args + '/' + the_query)
     //console.log(JSON.stringify(response,null,2))
     if (response.status == 200) {
       let content_type = response.headers.get('content-type')
