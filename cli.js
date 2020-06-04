@@ -6,6 +6,19 @@ const fetch = require('node-fetch')
 prompt.start()
 
 async function init_engine(url){
+  let res = await fetch(args + '/api/engine-version')
+  let version = (await res.json()).version
+  console.log(`pico-engine version is ${version}`)
+  res = await fetch(args + '/api/root-eci')
+  let eci = (await res.json()).eci
+  console.log(`current ECI is ${eci}`)
+  res = await fetch(args + '/sky/cloud/' + eci + '/io.picolabs.wrangler/channel?value=' + eci)
+  let channel = await res.json()
+  console.log(`channel type is ${channel.type}`)
+  console.log(`channel name is ${channel.name}`)
+  res = await fetch(args + '/sky/cloud/' + eci + '/io.picolabs.visual_params/dname')
+  let pico_name = await res.text()
+  console.log(`pico name is ${pico_name}`)
   return url
 }
 
@@ -19,8 +32,8 @@ function prompt2 (schema) {
 async function main () {
   //console.log(`Hello world of ${args}`)
   if (/^https?:\/\//.test(args)) {
+    console.log(`pico-engine is running at ${args[0]}`)
     engine = await init_engine(args[0])
-    console.log(`pico-engine is running at ${engine}`)
   } else {
     console.log('Usage: pico-debug pico-engine')
     process.exit(1)
