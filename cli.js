@@ -45,9 +45,16 @@ async function main () {
     let result = await prompt2(question)
     let the_query = result[question]
     while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
-    if (the_query === 'exit') {
+    if (/(exit|quit)/.test(the_query)) {
       break
     }
+    let eci_stmt = /^eci.(.+)/.exec(the_query)
+    if (eci_stmt) {
+      eci = eci_stmt[1]
+      continue
+    }
+    the_query = the_query.replace(/ECI/g, eci)
+    the_query = the_query.replace(/EID/g, 'none')
     console.log(`Your query is /${the_query}`)
     let response = await fetch(engine_uri + '/' + the_query)
     //console.log(JSON.stringify(response,null,2))
