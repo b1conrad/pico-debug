@@ -6,20 +6,20 @@ const fetch = require('node-fetch')
 prompt.start()
 
 async function init_engine(url){
-  let res = await fetch(args + '/api/engine-version')
+  let res = await fetch(url + '/api/engine-version')
   let version = (await res.json()).version
   console.log(`pico-engine version is ${version}`)
-  res = await fetch(args + '/api/root-eci')
+  res = await fetch(url + '/api/root-eci')
   let eci = (await res.json()).eci
   console.log(`current ECI is ${eci}`)
-  res = await fetch(args + '/sky/cloud/' + eci + '/io.picolabs.wrangler/channel?value=' + eci)
+  res = await fetch(url + '/sky/cloud/' + eci + '/io.picolabs.wrangler/channel?value=' + eci)
   let channel = await res.json()
   console.log(`channel type is ${channel.type}`)
   console.log(`channel name is ${channel.name}`)
-  res = await fetch(args + '/sky/cloud/' + eci + '/io.picolabs.visual_params/dname')
+  res = await fetch(url + '/sky/cloud/' + eci + '/io.picolabs.visual_params/dname')
   let pico_name = await res.text()
   console.log(`pico name is ${pico_name}`)
-  return url
+  return eci
 }
 
 function prompt2 (schema) {
@@ -30,12 +30,14 @@ function prompt2 (schema) {
   })
 }
 async function main () {
+  let engine_uri, eci
   //console.log(`Hello world of ${args}`)
   if (/^https?:\/\//.test(args)) {
-    console.log(`pico-engine is running at ${args[0]}`)
-    engine = await init_engine(args[0])
+    engine_uri = args[0]
+    console.log(`pico-engine is running at ${engine_uri}`)
+    eci = await init_engine(engine_uri)
   } else {
-    console.log('Usage: pico-debug pico-engine')
+    console.log('Usage: pico-debug pico-engine-url')
     process.exit(1)
   }
   while (true) {
@@ -47,7 +49,7 @@ async function main () {
       break
     }
     console.log(`Your query is /${the_query}`)
-    let response = await fetch(args + '/' + the_query)
+    let response = await fetch(engine_uri + '/' + the_query)
     //console.log(JSON.stringify(response,null,2))
     if (response.status == 200) {
       let content_type = response.headers.get('content-type')
