@@ -12,6 +12,7 @@ async function init_engine(url){
   res = await fetch(url + '/api/root-eci')
   let eci = (await res.json()).eci
   console.log(`current ECI is ${eci}`)
+  console.log(`current EID is none`)
   res = await fetch(url + '/sky/cloud/' + eci + '/io.picolabs.wrangler/channel?value=' + eci)
   let channel = await res.json()
   console.log(`channel type is ${channel.type}`)
@@ -53,8 +54,8 @@ async function main () {
       eci = eci_stmt[1]
       continue
     }
-    the_query = the_query.replace(/ECI/g, eci)
-    the_query = the_query.replace(/EID/g, 'none')
+    the_query = the_query.replace(/\bECI\b/g, eci)
+    the_query = the_query.replace(/\bEID\b/g, 'none')
     console.log(`Your query is /${the_query}`)
     let response = await fetch(engine_uri + '/' + the_query)
     //console.log(JSON.stringify(response,null,2))
