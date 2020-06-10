@@ -80,6 +80,10 @@ async function main () {
       ).run()
       continue
     }
+    if (the_query === 'rids') {
+      console.log(rids)
+      continue
+    }
     the_query = the_query.replace(/\bECI\b/g, eci)
     the_query = the_query.replace(/\bEID\b/g, 'none')
     the_query = the_query.replace(/\bRID\b/g, rid)
