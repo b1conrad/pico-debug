@@ -12,26 +12,33 @@ console.log(
   )
 )
 
+const rid_w = 'io.picolabs.wrangler'
+const rid_vp = 'io.picolabs.visual_params'
+
+async function new_eci(url,eci){
+  let res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_vp+'/dname')
+  let pico_name = await res.text()
+  console.log(`pico name is ${pico_name}`)
+}
+
 async function init_engine(url){
-  let res = await fetch(url + '/api/engine-version')
+  let res = await fetch(url+'/api/engine-version')
   let version = (await res.json()).version
   console.log(`pico-engine version is ${version}`)
-  res = await fetch(url + '/api/root-eci')
+  res = await fetch(url+'/api/root-eci')
   let eci = (await res.json()).eci
   console.log(`current ECI is ${eci}`)
   console.log(`current EID is none`)
-  res = await fetch(url + '/sky/cloud/' + eci + '/io.picolabs.wrangler/channel?value=' + eci)
+  res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_w+'/channel?value='+eci)
   let channel = await res.json()
   console.log(`channel type is ${channel.type}`)
   console.log(`channel name is ${channel.name}`)
-  res = await fetch(url + '/sky/cloud/' + eci + '/io.picolabs.visual_params/dname')
-  let pico_name = await res.text()
-  console.log(`pico name is ${pico_name}`)
+  await new_eci(url,eci)
   return eci
 }
 
 async function installed_rulesets(url,eci){
-  let res = await fetch(url + '/sky/cloud/' + eci + '/io.picolabs.wrangler/installedRulesets')
+  let res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_w+'/installedRulesets')
   return await res.json()
 }
 
@@ -64,6 +71,7 @@ async function main () {
     if (eci_stmt) {
       eci = eci_stmt[1]
       rids = await installed_rulesets(engine_uri,eci)
+      await new_eci(engine_uri,eci)
       continue
     }
     if (the_query === 'rid') {
@@ -76,7 +84,7 @@ async function main () {
     the_query = the_query.replace(/\bEID\b/g, 'none')
     the_query = the_query.replace(/\bRID\b/g, rid)
     console.log(`Your query is /${the_query}`)
-    let response = await fetch(engine_uri + '/' + the_query)
+    let response = await fetch(engine_uri+'/'+the_query)
     //console.log(JSON.stringify(response,null,2))
     if (response.status == 200) {
       let content_type = response.headers.get('content-type')
