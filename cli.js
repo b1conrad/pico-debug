@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const [,, ...args] = process.argv
 const { prompt } = require('enquirer')
+const { AutoComplete } = require('enquirer')
 const fetch = require('node-fetch')
 const chalk = require('ansi-colors')
 const figlet = require('figlet')
@@ -29,13 +30,20 @@ async function init_engine(url){
   return eci
 }
 
+async function installed_rulesets(url,eci){
+  let res = await fetch(url + '/sky/cloud/' + eci + '/io.picolabs.wrangler/installedRulesets')
+  return await res.json()
+}
+
 async function main () {
-  let engine_uri, eci
+  let engine_uri, eci, rids, rid
   //console.log(`Hello world of ${args}`)
   if (/^https?:\/\//.test(args)) {
     engine_uri = args[0]
     console.log(`pico-engine is running at ${engine_uri}`)
     eci = await init_engine(engine_uri)
+    rids = await installed_rulesets(engine_uri,eci)
+    //console.log(rids)
   } else {
     console.log('Usage: pico-debug pico-engine-url')
     process.exit(1)
@@ -55,10 +63,18 @@ async function main () {
     let eci_stmt = /^eci.(.+)/.exec(the_query)
     if (eci_stmt) {
       eci = eci_stmt[1]
+      rids = await installed_rulesets(engine_uri,eci)
+      continue
+    }
+    if (the_query === 'rid') {
+      rid = await new AutoComplete({
+        name: 'rid', message: 'rid', choices: rids}
+      ).run()
       continue
     }
     the_query = the_query.replace(/\bECI\b/g, eci)
     the_query = the_query.replace(/\bEID\b/g, 'none')
+    the_query = the_query.replace(/\bRID\b/g, rid)
     console.log(`Your query is /${the_query}`)
     let response = await fetch(engine_uri + '/' + the_query)
     //console.log(JSON.stringify(response,null,2))
