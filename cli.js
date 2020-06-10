@@ -29,6 +29,7 @@ async function init_engine(url){
   let eci = (await res.json()).eci
   console.log(`current ECI is ${eci}`)
   console.log(`current EID is none`)
+  console.log(`current RID is ${rid_w}`)
   res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_w+'/channel?value='+eci)
   let channel = await res.json()
   console.log(`channel type is ${channel.type}`)
@@ -43,7 +44,8 @@ async function installed_rulesets(url,eci){
 }
 
 async function main () {
-  let engine_uri, eci, rids, rid
+  let engine_uri, eci, rids
+  let rid =rid_w
   //console.log(`Hello world of ${args}`)
   if (/^https?:\/\//.test(args)) {
     engine_uri = args[0]
