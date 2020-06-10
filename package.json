@@ -25,7 +25,7 @@
     "pico-debug": "./cli.js"
   },
   "dependencies": {
-    "node-fetch": "^2.6.0",
-    "prompt": "^1.0.0"
+    "enquirer": "^2.3.5",
+    "node-fetch": "^2.6.0"
   }
 }

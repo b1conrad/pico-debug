@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 const [,, ...args] = process.argv
-const prompt = require('prompt')
+const { prompt } = require('enquirer')
 const fetch = require('node-fetch')
-
-prompt.start()
 
 async function init_engine(url){
   let res = await fetch(url + '/api/engine-version')
@@ -23,13 +21,6 @@ async function init_engine(url){
   return eci
 }
 
-function prompt2 (schema) {
-  return new Promise(function (resolve, reject) {
-    prompt.get(schema, function (err, result) {
-      return err ? reject(err) : resolve(result)
-    })
-  })
-}
 async function main () {
   let engine_uri, eci
   //console.log(`Hello world of ${args}`)
@@ -43,7 +34,11 @@ async function main () {
   }
   while (true) {
     let question = 'What is your query?'
-    let result = await prompt2(question)
+    let result = await prompt({
+      type: 'input',
+      name: question,
+      message: question
+    })
     let the_query = result[question]
     while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
     if (/(exit|quit)/.test(the_query)) {
