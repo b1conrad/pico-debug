@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "enquirer": "^2.3.5",
+    "figlet": "^1.4.0",
     "node-fetch": "^2.6.0"
   }
 }

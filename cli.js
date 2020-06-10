@@ -2,6 +2,14 @@
 const [,, ...args] = process.argv
 const { prompt } = require('enquirer')
 const fetch = require('node-fetch')
+const chalk = require('ansi-colors')
+const figlet = require('figlet')
+
+console.log(
+  chalk.cyan(
+    figlet.textSync('pico-debug', { horizontalLayout: 'full' })
+  )
+)
 
 async function init_engine(url){
   let res = await fetch(url + '/api/engine-version')
