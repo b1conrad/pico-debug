@@ -2,6 +2,7 @@
 const [,, ...args] = process.argv
 const { prompt } = require('enquirer')
 const { AutoComplete } = require('enquirer')
+const { Input } = require('enquirer')
 const fetch = require('node-fetch')
 const chalk = require('ansi-colors')
 const figlet = require('figlet')
@@ -11,6 +12,9 @@ console.log(
     figlet.textSync('pico-debug', { horizontalLayout: 'full' })
   )
 )
+
+Input.prototype.up = Input.prototype.altUp
+Input.prototype.down = Input.prototype.altDown
 
 const rid_w = 'io.picolabs.wrangler'
 const rid_vp = 'io.picolabs.visual_params'
