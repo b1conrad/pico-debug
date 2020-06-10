@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 const [,, ...args] = process.argv
-const { prompt } = require('enquirer')
-const { AutoComplete } = require('enquirer')
-const { Input } = require('enquirer')
+const { AutoComplete, Input } = require('enquirer')
 const fetch = require('node-fetch')
 const chalk = require('ansi-colors')
 const figlet = require('figlet')
@@ -63,14 +61,14 @@ async function main () {
   }
   let history = new Map()
   while (true) {
-    let question = 'What is your query?'
-    let result = await prompt({
-      type: 'input',
-      name: question,
-      message: question,
-      history: { store: history, autosave: true },
+    const prompt = new Input({
+      message: 'query',
+      history: {
+        store: history,
+        autosave: true
+      }
     })
-    let the_query = result[question]
+    let the_query = await prompt.run()
     while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
     if (/(exit|quit)/.test(the_query)) {
       break
