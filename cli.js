@@ -55,12 +55,14 @@ async function main () {
     console.log('Usage: pico-debug pico-engine-url')
     process.exit(1)
   }
+  let history = new Map()
   while (true) {
     let question = 'What is your query?'
     let result = await prompt({
       type: 'input',
       name: question,
-      message: question
+      message: question,
+      history: { store: history, autosave: true },
     })
     let the_query = result[question]
     while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
