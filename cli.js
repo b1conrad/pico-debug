@@ -75,7 +75,7 @@ async function main () {
     if (/(exit|quit)/.test(the_query)) {
       break
     }
-    let eci_stmt = /^eci.(.+)/.exec(the_query)
+    let eci_stmt = /^eci.([a-zA-Z0-9]+)/.exec(the_query)
     if (eci_stmt) {
       eci = eci_stmt[1]
       rids = await installed_rulesets(engine_uri,eci)
