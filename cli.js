@@ -69,7 +69,7 @@ async function main () {
       }
     })
     let the_query = await prompt.run()
-    if (the_query === '') {
+    if (!the_query || the_query.length <= 0) {
       continue
     }
     while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
