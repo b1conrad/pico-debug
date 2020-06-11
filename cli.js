@@ -70,6 +70,9 @@ async function main () {
     })
     let the_query = await prompt.run()
     while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
+    if (the_query === '') {
+      continue
+    }
     if (/(exit|quit)/.test(the_query)) {
       break
     }
