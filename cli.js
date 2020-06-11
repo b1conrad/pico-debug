@@ -104,7 +104,8 @@ async function main () {
       //console.log(content_type)
       if (/^application\/json;/.test(content_type)) {
         let json = await response.json()
-        console.log(json)
+        //console.log(json)
+        console.log(JSON.stringify(json,null,2))
       } else if (/^text\/plain/.test(content_type)) {
         let body = await response.text()
         console.log(body)
