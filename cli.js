@@ -93,6 +93,14 @@ async function main () {
       console.log(rids)
       continue
     }
+    let query_stmt = /^query ([^ ]*)/.exec(the_query)
+    if (query_stmt) {
+      the_query = 'sky/cloud/ECI/RID/'+query_stmt[1]
+    }
+    let event_stmt = /^event ([^ ]*)/.exec(the_query)
+    if (event_stmt) {
+      the_query = 'sky/event/ECI/EID/'+event_stmt[1]
+    }
     the_query = the_query.replace(/\bECI\b/g, eci)
     the_query = the_query.replace(/\bEID\b/g, 'none')
     the_query = the_query.replace(/\bRID\b/g, rid)
