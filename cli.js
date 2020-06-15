@@ -118,6 +118,11 @@ async function main () {
     if (event_stmt) {
       the_query = 'sky/event/ECI/EID/'+event_stmt[1]
     }
+    let krl_stmt = /^krl (.*)/.exec(the_query)
+    if (krl_stmt) {
+      let the_krl = encodeURIComponent(krl_stmt[1])
+      the_query = 'sky/event/'+root_eci+'/none/console/expr?expr='+the_krl
+    }
     the_query = the_query.replace(/\bECI\b/g, eci)
     the_query = the_query.replace(/\bEID\b/g, 'none')
     the_query = the_query.replace(/\bRID\b/g, rid)
