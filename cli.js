@@ -16,6 +16,8 @@ Input.prototype.down = Input.prototype.altDown
 
 const rid_w = 'io.picolabs.wrangler'
 const rid_vp = 'io.picolabs.visual_params'
+let root_eci
+var needed_console = false
 
 async function new_eci(url,eci){
   let res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_vp+'/dname')
@@ -29,6 +31,16 @@ async function init_engine(url){
   console.log(`pico-engine version is ${version}`)
   res = await fetch(url+'/api/root-eci')
   let eci = (await res.json()).eci
+  root_eci = eci
+  res = await fetch(url+'/sky/cloud/'+root_eci+'/'+rid_w+'/installedRulesets')
+  let root_rulesets = await res.json()
+  //console.log(`root_rulesets are ${JSON.stringify(root_rulesets)}`)
+  needed_console = root_rulesets.indexOf('console') < 0
+  //console.log(`needed_console is ${needed_console}`)
+  if (needed_console) {
+    res = await fetch(url+'/sky/event/'+root_eci+'/none/wrangler/install_rulesets_requested?rid=console')
+    //console.log(JSON.stringify(await res.json()))
+  }
   console.log(`current ECI is ${eci}`)
   console.log(`current EID is none`)
   console.log(`current RID is ${rid_w}`)
@@ -74,6 +86,11 @@ async function main () {
     }
     while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
     if (/(exit|quit)/.test(the_query)) {
+      //console.log(`needed_console is ${needed_console}`)
+      if (needed_console) {
+        res = await fetch(engine_uri+'/sky/event/'+root_eci+'/none/wrangler/uninstall_rulesets_requested?rid=console')
+        //console.log(JSON.stringify(await res.json()))
+      }
       break
     }
     let eci_stmt = /^eci.([a-zA-Z0-9]+)/.exec(the_query)
