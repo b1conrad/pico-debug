@@ -94,8 +94,10 @@ The second example creates a new pico named "John" which is an Aries agent.
 ### Directly evaluate a KRL expression
 
 This new command requires that the pico-engine used has the `console` ruleset registered with it.
-This ruleset can be registered from this location:
-https://raw.githubusercontent.com/Picolab/console/master/krl/console.krl
+This will be done by this program if necessary
+(meaning that after using the program, the `console`
+ruleset _will_ be registered with the pico-engine)
+so, if this is a problem you'll have to unregister it manually.
 
 Examples:
 

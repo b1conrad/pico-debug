@@ -16,6 +16,7 @@ Input.prototype.down = Input.prototype.altDown
 
 const rid_w = 'io.picolabs.wrangler'
 const rid_vp = 'io.picolabs.visual_params'
+const url_console = 'https://raw.githubusercontent.com/Picolab/console/master/krl/console.krl'
 let root_eci
 var needed_console = false
 
@@ -38,7 +39,7 @@ async function init_engine(url){
   needed_console = root_rulesets.indexOf('console') < 0
   //console.log(`needed_console is ${needed_console}`)
   if (needed_console) {
-    res = await fetch(url+'/sky/event/'+root_eci+'/none/wrangler/install_rulesets_requested?rid=console')
+    res = await fetch(url+'/sky/event/'+root_eci+'/none/wrangler/install_rulesets_requested?url='+url_console)
     //console.log(JSON.stringify(await res.json()))
   }
   console.log(`current ECI is ${eci}`)
