@@ -90,3 +90,16 @@ The first example assumes that the current RID is `io.picolabs.wrangler`
 and queries for the children of the current pico.
 
 The second example creates a new pico named "John" which is an Aries agent.
+
+### Directly evaluate a KRL expression
+
+This new command requires that the pico-engine used has the `console` ruleset registered with it.
+This ruleset can be registered from this location:
+https://raw.githubusercontent.com/Picolab/console/master/krl/console.krl
+
+Examples:
+
+```
+krl 5+7
+krl ["a","b","c"].map(function(x){x.ord()})
+```
