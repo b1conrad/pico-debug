@@ -98,7 +98,14 @@ async function main () {
     }
     let eci_stmt = /^eci.([a-zA-Z0-9]+)/.exec(the_query)
     if (eci_stmt) {
-      eci = eci_stmt[1]
+      if (the_query.charAt(3)==='@') {
+        eci = /\w+/.exec(bindings.get(eci_stmt[1]))[0]
+        if (!eci) {
+          console.log(`nothing at ${eci_stmt[1]}`)
+        }
+      } else {
+        eci = eci_stmt[1]
+      }
       rids = await installed_rulesets(engine_uri,eci)
       await new_eci(engine_uri,eci)
       continue
@@ -162,10 +169,11 @@ async function main () {
         }
       } else if (/^text\/plain/.test(content_type)) {
         let body = await response.text()
-        console.log(body)
         if (the_key) {
           bindings.set(the_key,body)
           //console.log(bindings)
+        } else {
+          console.log(body)
         }
       } else {
         console.log(content_type)
