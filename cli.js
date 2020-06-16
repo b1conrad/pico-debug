@@ -73,6 +73,7 @@ async function main () {
     process.exit(1)
   }
   let history = new Map()
+  let bindings = new Map()
   while (true) {
     const prompt = new Input({
       message: 'query',
@@ -81,6 +82,7 @@ async function main () {
         autosave: true
       }
     })
+    let the_key = null
     let the_query = await prompt.run()
     if (!the_query || the_query.length <= 0) {
       continue
@@ -111,6 +113,22 @@ async function main () {
       console.log(rids)
       continue
     }
+    let assign_stmt = /^(\w+) *= *(.+)/.exec(the_query)
+    if (assign_stmt) {
+      the_key = assign_stmt[1]
+      the_query = assign_stmt[2]
+    }
+    let exec_stmt = /^(\w+)([.[{].*)/.exec(the_query)
+    if (exec_stmt) {
+      let the_var_val = bindings.get(exec_stmt[1])
+      if (the_var_val) {
+        let the_krl = encodeURIComponent(the_var_val + exec_stmt[2])
+        the_query = 'sky/event/'+root_eci+'/none/console/expr?expr='+the_krl
+      } else {
+        console.log(`nothing at ${the_var_name}`)
+        continue
+      }
+    }
     let query_stmt = /^query ([^ ]*)/.exec(the_query)
     if (query_stmt) {
       the_query = 'sky/cloud/ECI/RID/'+query_stmt[1]
@@ -127,7 +145,7 @@ async function main () {
     the_query = the_query.replace(/\bECI\b/g, eci)
     the_query = the_query.replace(/\bEID\b/g, 'none')
     the_query = the_query.replace(/\bRID\b/g, rid)
-    console.log(`Your query is /${the_query}`)
+    console.log(`Your query is /${the_query.replace(/(.{63})..+/,'$1…')}`)
     let response = await fetch(engine_uri+'/'+the_query)
     //console.log(JSON.stringify(response,null,2))
     if (response.status == 200) {
@@ -135,11 +153,20 @@ async function main () {
       //console.log(content_type)
       if (/^application\/json;/.test(content_type)) {
         let json = await response.json()
-        //console.log(json)
-        console.log(JSON.stringify(json,null,2))
+        if (the_key) {
+          bindings.set(the_key,JSON.stringify(json))
+          //console.log(bindings)
+        } else {
+          //console.log(json)
+          console.log(JSON.stringify(json,null,2))
+        }
       } else if (/^text\/plain/.test(content_type)) {
         let body = await response.text()
         console.log(body)
+        if (the_key) {
+          bindings.set(the_key,body)
+          //console.log(bindings)
+        }
       } else {
         console.log(content_type)
       }
