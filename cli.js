@@ -86,7 +86,7 @@ async function main () {
       continue
     }
     while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
-    if (/(exit|quit)/.test(the_query)) {
+    if (/^(exit|quit)$/.test(the_query)) {
       //console.log(`needed_console is ${needed_console}`)
       if (needed_console) {
         res = await fetch(engine_uri+'/sky/event/'+root_eci+'/none/wrangler/uninstall_rulesets_requested?rid=console')
