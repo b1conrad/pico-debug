@@ -129,8 +129,13 @@ async function main () {
     if (exec_stmt) {
       let the_var_val = bindings.get(exec_stmt[1])
       if (the_var_val) {
-        let the_krl = encodeURIComponent(the_var_val + exec_stmt[2])
-        the_query = 'sky/event/'+root_eci+'/none/console/expr?expr='+the_krl
+        if (exec_stmt[2] == '.') {
+          console.log(the_var_val)
+          continue
+        } else {
+          let the_krl = encodeURIComponent(the_var_val + exec_stmt[2])
+          the_query = 'sky/event/'+root_eci+'/none/console/expr?expr='+the_krl
+        }
       } else {
         console.log(`nothing at ${the_var_name}`)
         continue
