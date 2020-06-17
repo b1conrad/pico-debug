@@ -105,3 +105,24 @@ Examples:
 krl 5+7
 krl ["a","b","c"].map(function(x){x.ord()})
 ```
+### Assignment and KRL operators
+
+Query and event results can now be bound to a name,
+and then that result can be subjected to KRL operators.
+
+Examplse:
+
+```
+c = query children
+c.typeof()
+c.length()
+c.filter(function(x){x{"name"} == "Carol"}).head()
+```
+
+The first example, assuming that the current RID is `io.picolabs.wrangler`,
+queries for the children of the current pico.
+
+The next lines compute (using KRL operators):
+the type of the result ("Array"),
+the number of children,
+and the child pico named "Carol" (or `null`).
