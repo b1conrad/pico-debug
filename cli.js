@@ -17,8 +17,10 @@ Input.prototype.down = Input.prototype.altDown
 const rid_w = 'io.picolabs.wrangler'
 const rid_vp = 'io.picolabs.visual_params'
 const url_console = 'https://raw.githubusercontent.com/Picolab/console/master/krl/console.krl'
+const url_pico_debug = 'https://raw.githubusercontent.com/b1conrad/pico-debug/master/pico-debug.krl'
 let root_eci
 var needed_console = false
+var needed_pico_debug = false
 
 async function new_eci(url,eci){
   let res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_vp+'/dname')
@@ -40,6 +42,11 @@ async function init_engine(url){
   //console.log(`needed_console is ${needed_console}`)
   if (needed_console) {
     res = await fetch(url+'/sky/event/'+root_eci+'/none/wrangler/install_rulesets_requested?url='+url_console)
+    //console.log(JSON.stringify(await res.json()))
+  }
+  needed_pico_debug = root_rulesets.indexOf('pico-debug') < 0
+  if (needed_pico_debug) {
+    res = await fetch(url+'/sky/event/'+root_eci+'/none/wrangler/install_rulesets_requested?url='+url_pico_debug)
     //console.log(JSON.stringify(await res.json()))
   }
   console.log(`current ECI is ${eci}`)
@@ -84,6 +91,7 @@ async function main () {
     })
     let the_key = null
     let the_query = await prompt.run()
+    let the_options = {}
     if (!the_query || the_query.length <= 0) {
       continue
     }
@@ -92,6 +100,11 @@ async function main () {
       //console.log(`needed_console is ${needed_console}`)
       if (needed_console) {
         res = await fetch(engine_uri+'/sky/event/'+root_eci+'/none/wrangler/uninstall_rulesets_requested?rid=console')
+        //console.log(JSON.stringify(await res.json()))
+      }
+      //console.log(`needed_pico_debug is ${needed_pico_debug}`)
+      if (needed_pico_debug) {
+        res = await fetch(engine_uri+'/sky/event/'+root_eci+'/none/wrangler/uninstall_rulesets_requested?rid=pico-debug')
         //console.log(JSON.stringify(await res.json()))
       }
       break
@@ -129,12 +142,17 @@ async function main () {
     if (exec_stmt) {
       let the_var_val = bindings.get(exec_stmt[1])
       if (the_var_val) {
-        if (exec_stmt[2] == '.') {
+        let ops = exec_stmt[2]
+        if (ops == '.') {
           console.log(the_var_val)
           continue
         } else {
-          let the_krl = encodeURIComponent(the_var_val + exec_stmt[2])
-          the_query = 'sky/event/'+root_eci+'/none/console/expr?expr='+the_krl
+          the_query = 'sky/event/'+root_eci+'/none/debug/obj_ops?ops='+ops
+          the_options = {
+            method:'POST',
+            headers: { "Content-Type": "application/json", },
+            body:JSON.stringify({"obj":the_var_val}),
+          }
         }
       } else {
         console.log(`nothing at ${the_var_name}`)
@@ -158,7 +176,7 @@ async function main () {
     the_query = the_query.replace(/\bEID\b/g, 'none')
     the_query = the_query.replace(/\bRID\b/g, rid)
     console.log(`Your query is /${the_query.replace(/(.{63})..+/,'$1…')}`)
-    let response = await fetch(engine_uri+'/'+the_query)
+    let response = await fetch(engine_uri+'/'+the_query,the_options)
     //console.log(JSON.stringify(response,null,2))
     if (response.status == 200) {
       let content_type = response.headers.get('content-type')
