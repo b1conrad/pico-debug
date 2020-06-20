@@ -7,7 +7,7 @@ ruleset pico-debug {
       [ { "name": "__testing" },
         { "name": "rs", "args": [ "ops" ] }
       ] , "events":
-      [ { "domain": "console", "type": "expr", "attrs": [ "obj", "ops" ] }
+      [ { "domain": "debug", "type": "obj_ops", "attrs": [ "obj", "ops" ] }
       ]
     }
     um = <<
@@ -28,7 +28,7 @@ ruleset pico-debug {
     }
   }
   rule set_obj {
-    select when console new_obj
+    select when debug new_obj
     fired {
       ent:obj := event:attr("obj")
     }
@@ -37,7 +37,7 @@ ruleset pico-debug {
     }
   }
   rule create_child_pico {
-    select when console expr
+    select when debug obj_ops
     pre {
       obj = event:attr("obj").decode()
       ops = event:attr("ops")
@@ -66,7 +66,7 @@ ruleset pico-debug {
     every {
       engine:registerRuleset(url=url) setting(rid)
       engine:installRuleset(picoId,rid=rid)
-      event:send({"eci": eci, "domain": "console", "type": "new_obj",
+      event:send({"eci": eci, "domain": "debug", "type": "new_obj",
         "attrs": {"obj": obj}
       })
       http:get(<<#{meta:host}/sky/cloud/#{eci}/#{rid}/result>>) setting(res)
@@ -75,7 +75,8 @@ ruleset pico-debug {
       engine:unregisterRuleset(rid)
     }
     always {
-      raise wrangler event "child_deletion" attributes event:attrs
+      //raise wrangler event "child_deletion" attributes event:attrs
+      //for now: let the console ruleset do this
     }
   }
 }
