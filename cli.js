@@ -142,11 +142,11 @@ async function main () {
     if (exec_stmt) {
       let the_var_val = bindings.get(exec_stmt[1])
       if (the_var_val) {
-        let ops = exec_stmt[2]
-        if (ops == '.') {
+        if (exec_stmt[2] == '.') {
           console.log(the_var_val)
           continue
         } else {
+          let ops = encodeURIComponent(exec_stmt[2])
           the_query = 'sky/event/'+root_eci+'/none/debug/obj_ops?ops='+ops
           the_options = {
             method:'POST',
