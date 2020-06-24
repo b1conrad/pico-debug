@@ -155,7 +155,7 @@ async function main () {
           }
         }
       } else {
-        console.log(`nothing at ${the_var_name}`)
+        console.log(`nothing at ${exec_stmt[1]}`)
         continue
       }
     }
