@@ -46,14 +46,13 @@ ruleset pico-debug {
     fired {
       raise wrangler event "new_child_request" attributes {
         "name": random:uuid(), "rids": [meta:rid],
-        "obj": obj, "ops": ops, "txn_id": meta:txnId
+        "obj": obj, "ops": ops
       }
     }
   }
   rule evaluate_expression {
     select when wrangler new_child_created
-      where event:attr("rs_attrs"){"txn_id"} == meta:txnId
-        || event:attr("txn_id") == meta:txnId
+      where event:attr("rids") >< meta:rid
     pre {
       obj = event:attr("rs_attrs"){"obj"} || event:attr("obj")
       ops = event:attr("rs_attrs"){"ops"} || event:attr("ops")
@@ -75,8 +74,7 @@ ruleset pico-debug {
       engine:unregisterRuleset(rid)
     }
     always {
-      //raise wrangler event "child_deletion" attributes event:attrs
-      //for now: let the console ruleset do this
+      raise wrangler event "child_deletion" attributes event:attrs
     }
   }
 }
