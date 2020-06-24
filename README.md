@@ -69,9 +69,7 @@ and Ctrl-A to move to the beginning of the line
 and Ctrl-E to move to the end of the line.
 When finished editing, press Enter or Return to submit the query.
 
-### Experimental shortcuts
-
-Recently added two new commands as an experiment.
+### Shortcuts
 
 `query` followed by a space will be replaced by `/sky/cloud/ECI/RID/` 
 reducing the amount of typing required to query the current pico and current ruleset.
