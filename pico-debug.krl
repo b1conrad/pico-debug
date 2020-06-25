@@ -59,7 +59,6 @@ ruleset #{rsn} {
       url = <<#{meta:host}/sky/cloud/#{eci}/pico-debug/rs.txt?ops=#{e}>>
       picoId = event:attr("id")
     }
-    if ops then
     every {
       engine:registerRuleset(url=url) setting(rid)
       engine:installRuleset(picoId,rid=rid)
@@ -71,7 +70,7 @@ ruleset #{rsn} {
       engine:uninstallRuleset(picoId,rid)
       engine:unregisterRuleset(rid)
     }
-    always {
+    fired {
       raise wrangler event "child_deletion"
         attributes event:attrs.delete("ops")
     }
