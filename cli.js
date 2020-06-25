@@ -22,6 +22,12 @@ let root_eci
 var needed_console = false
 var needed_pico_debug = false
 
+async function install_url(engine_uri,rid_url){
+  let res = await fetch(engine_uri+'/api/ruleset/register?url='+rid_url)
+  res = await fetch(engine_uri+'/sky/event/'+root_eci+'/none/wrangler/install_rulesets_requested?url='+rid_url)
+  //console.log(JSON.stringify(await res.json()))
+}
+
 async function new_eci(url,eci){
   let res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_vp+'/dname')
   let pico_name = await res.text()
@@ -41,13 +47,11 @@ async function init_engine(url){
   needed_console = root_rulesets.indexOf('console') < 0
   //console.log(`needed_console is ${needed_console}`)
   if (needed_console) {
-    res = await fetch(url+'/sky/event/'+root_eci+'/none/wrangler/install_rulesets_requested?url='+url_console)
-    //console.log(JSON.stringify(await res.json()))
+    await install_url(url,url_console)
   }
   needed_pico_debug = root_rulesets.indexOf('pico-debug') < 0
   if (needed_pico_debug) {
-    res = await fetch(url+'/sky/event/'+root_eci+'/none/wrangler/install_rulesets_requested?url='+url_pico_debug)
-    //console.log(JSON.stringify(await res.json()))
+    await install_url(url,url_pico_debug)
   }
   console.log(`current ECI is ${eci}`)
   console.log(`current EID is none`)
