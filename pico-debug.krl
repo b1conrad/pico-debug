@@ -45,16 +45,15 @@ ruleset pico-debug {
     if ops then noop()
     fired {
       raise wrangler event "new_child_request" attributes {
-        "name": random:uuid(), "rids": [meta:rid],
-        "obj": obj, "ops": ops
+        "name": random:uuid(), "rids": [meta:rid], "ops": ops
       }
+      ent:obj := obj
     }
   }
   rule evaluate_expression {
     select when wrangler new_child_created
       where event:attr("rids") >< meta:rid
     pre {
-      obj = event:attr("rs_attrs"){"obj"} || event:attr("obj")
       ops = event:attr("rs_attrs"){"ops"} || event:attr("ops")
       e = ops.math:base64encode().replace(re#[+]#g,"-")
       eci = event:attr("eci")
@@ -66,7 +65,7 @@ ruleset pico-debug {
       engine:registerRuleset(url=url) setting(rid)
       engine:installRuleset(picoId,rid=rid)
       event:send({"eci": eci, "domain": "debug", "type": "new_obj",
-        "attrs": {"obj": obj}
+        "attrs": {"obj": ent:obj}
       })
       http:get(<<#{meta:host}/sky/cloud/#{eci}/#{rid}/result>>) setting(res)
       send_directive("_txt",{"content":res{"content"}})
@@ -74,7 +73,19 @@ ruleset pico-debug {
       engine:unregisterRuleset(rid)
     }
     always {
-      raise wrangler event "child_deletion" attributes event:attrs
+      raise wrangler event "child_deletion"
+        attributes event:attrs.delete("ops")
+    }
+  }
+  rule do_nothing {
+    select when wrangler child_initialized
+      where event:attr("rids") >< meta:rid
+  }
+  rule clean_up {
+    select when wrangler child_deleted
+      where event:attr("rids") >< meta:rid
+    fired {
+      clear ent:obj
     }
   }
 }
