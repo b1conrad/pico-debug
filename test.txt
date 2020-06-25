@@ -1,0 +1,6 @@
+c=query children
+o=c.filter(function(c){c{"name"}.match(re#^\d+$#)})
+m=o.map(function(o){o{"id"}.engine:listChildren().head()})
+tc=m.map(function(m){m.engine:listChildren().length()})
+tc.length()
+tc.reduce(function(a,x){a+x})
