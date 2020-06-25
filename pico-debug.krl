@@ -45,7 +45,7 @@ ruleset #{rsn} {
     fired {
       raise wrangler event "new_child_request" attributes {
         "name": random:uuid(), "rids": [meta:rid], "ops": ops
-      }
+      };
       ent:obj := obj
     }
   }
