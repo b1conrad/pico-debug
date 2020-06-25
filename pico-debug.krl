@@ -10,19 +10,18 @@ ruleset pico-debug {
       [ { "domain": "debug", "type": "obj_ops", "attrs": [ "obj", "ops" ] }
       ]
     }
-    um = <<
-    use module io.picolabs.wrangler alias wrangler
-    use module io.picolabs.subscription alias subs
-    use module io.picolabs.visual_params alias v_p
-    >>
-    mt = <<
-  meta {#{um}shares result
-  }
->>
     rs = function(ops){
       rsn = random:uuid();
       e = ops.math:base64decode();
-      <<ruleset #{rsn} {#{mt}  global {
+      <<
+ruleset #{rsn} {
+  meta {
+    use module io.picolabs.wrangler alias wrangler
+    use module io.picolabs.subscription alias subs
+    use module io.picolabs.visual_params alias v_p
+    shares result
+  }
+  global {
     result=function(){
       ent:obj#{e}
     }
