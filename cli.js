@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const [,, ...args] = process.argv
-const { AutoComplete, Input } = require('enquirer')
+const { AutoComplete, Input, Password } = require('enquirer')
 const fetch = require('node-fetch')
 const chalk = require('ansi-colors')
 const figlet = require('figlet')
@@ -18,13 +18,13 @@ const rid_w = 'io.picolabs.wrangler'
 const rid_vp = 'io.picolabs.visual_params'
 const url_console = 'https://raw.githubusercontent.com/Picolab/console/master/krl/console.krl'
 const url_pico_debug = 'https://raw.githubusercontent.com/b1conrad/pico-debug/master/pico-debug.krl'
-let root_eci
+let owner_eci = null
 var needed_console = false
 var needed_pico_debug = false
 
 async function install_url(engine_uri,rid_url){
   let res = await fetch(engine_uri+'/api/ruleset/register?url='+rid_url)
-  res = await fetch(engine_uri+'/sky/event/'+root_eci+'/none/wrangler/install_rulesets_requested?url='+rid_url)
+  res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/install_rulesets_requested?url='+rid_url)
   //console.log(JSON.stringify(await res.json()))
 }
 
@@ -34,39 +34,73 @@ async function new_eci(url,eci){
   console.log(`pico name is ${pico_name}`)
 }
 
+async function installed_rulesets(url,eci){
+  let res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_w+'/installedRulesets')
+  return await res.json()
+}
+
 async function init_engine(url){
   let res = await fetch(url+'/api/engine-version')
   let version = (await res.json()).version
   console.log(`pico-engine version is ${version}`)
   res = await fetch(url+'/api/root-eci')
-  let eci = (await res.json()).eci
-  root_eci = eci
-  res = await fetch(url+'/sky/cloud/'+root_eci+'/'+rid_w+'/installedRulesets')
-  let root_rulesets = await res.json()
+  let root_eci = (await res.json()).eci
+  let root_rulesets = await installed_rulesets(url,root_eci)
   //console.log(`root_rulesets are ${JSON.stringify(root_rulesets)}`)
-  needed_console = root_rulesets.indexOf('console') < 0
+  let need_login = root_rulesets.indexOf('io.picolabs.account_management') >= 0
+  if (need_login) {
+    let temp_eci = null
+    let prompt = new Input({message:'Who are you?',initial:'Owner id or DID'})
+    let owner_id = await prompt.run()
+    let res = await fetch(url+'/sky/event/'+root_eci+'/none/owner/eci_requested?owner_id='+owner_id)
+    let dir_map = await res.json()
+    if (dir_map.directives && dir_map.directives.length){
+      let d = dir_map.directives[0]
+      if (d.name && d.name==='Returning eci from owner name') {
+        temp_eci = d.options.eci
+      } else if (d.name && d.name==='did') {
+        owner_eci = d.options.eci
+      }
+    }
+    if (! owner_eci) {
+      prompt = new Password({message:'Can you prove it?'})
+      let password = await prompt.run()
+      dir_map = null
+      if (temp_eci) {
+        res = await fetch(url+'/sky/event/'+temp_eci+'/none/owner/authenticate?password='+password)
+        dir_map = await res.json()
+      }
+      if (dir_map && dir_map.directives && dir_map.directives.length){
+        let d = dir_map.directives[0]
+        owner_eci = d.options.eci
+      }
+    }
+  } else {
+    owner_eci = root_eci
+  }
+  if (! owner_eci) {
+    console.log('Cannot find an owner pico for you!')
+    process.exit(1)
+  }
+  let owner_rulesets = await installed_rulesets(url,owner_eci)
+  needed_console = owner_rulesets.indexOf('console') < 0
   //console.log(`needed_console is ${needed_console}`)
   if (needed_console) {
     await install_url(url,url_console)
   }
-  needed_pico_debug = root_rulesets.indexOf('pico-debug') < 0
+  needed_pico_debug = owner_rulesets.indexOf('pico-debug') < 0
   if (needed_pico_debug) {
     await install_url(url,url_pico_debug)
   }
-  console.log(`current ECI is ${eci}`)
+  console.log(`current ECI is ${owner_eci}`)
   console.log(`current EID is none`)
   console.log(`current RID is ${rid_w}`)
-  res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_w+'/channel?value='+eci)
+  res = await fetch(url+'/sky/cloud/'+owner_eci+'/'+rid_w+'/channel?value='+owner_eci)
   let channel = await res.json()
   console.log(`channel type is ${channel.type}`)
   console.log(`channel name is ${channel.name}`)
-  await new_eci(url,eci)
-  return eci
-}
-
-async function installed_rulesets(url,eci){
-  let res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_w+'/installedRulesets')
-  return await res.json()
+  await new_eci(url,owner_eci)
+  return owner_eci
 }
 
 async function main () {
@@ -103,12 +137,12 @@ async function main () {
     if (/^(exit|quit)$/.test(the_query)) {
       //console.log(`needed_console is ${needed_console}`)
       if (needed_console) {
-        res = await fetch(engine_uri+'/sky/event/'+root_eci+'/none/wrangler/uninstall_rulesets_requested?rid=console')
+        res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/uninstall_rulesets_requested?rid=console')
         //console.log(JSON.stringify(await res.json()))
       }
       //console.log(`needed_pico_debug is ${needed_pico_debug}`)
       if (needed_pico_debug) {
-        res = await fetch(engine_uri+'/sky/event/'+root_eci+'/none/wrangler/uninstall_rulesets_requested?rid=pico-debug')
+        res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/uninstall_rulesets_requested?rid=pico-debug')
         //console.log(JSON.stringify(await res.json()))
       }
       break
@@ -151,7 +185,7 @@ async function main () {
           continue
         } else {
           let ops = encodeURIComponent(exec_stmt[2])
-          the_query = 'sky/event/'+root_eci+'/none/debug/obj_ops?ops='+ops
+          the_query = 'sky/event/'+owner_eci+'/none/debug/obj_ops?ops='+ops
           the_options = {
             method:'POST',
             headers: { "Content-Type": "application/json", },
@@ -174,7 +208,7 @@ async function main () {
     let krl_stmt = /^krl (.*)/.exec(the_query)
     if (krl_stmt) {
       let the_krl = encodeURIComponent(krl_stmt[1])
-      the_query = 'sky/event/'+root_eci+'/none/console/expr?expr='+the_krl
+      the_query = 'sky/event/'+owner_eci+'/none/console/expr?expr='+the_krl
     }
     the_query = the_query.replace(/\bECI\b/g, eci)
     the_query = the_query.replace(/\bEID\b/g, 'none')
