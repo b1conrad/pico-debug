@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const [,, ...args] = process.argv
 const { AutoComplete, Input, Password } = require('enquirer')
-const fetch = require('node-fetch')
+const node_fetch = require('node-fetch')
 const chalk = require('ansi-colors')
 const figlet = require('figlet')
 
@@ -22,6 +22,14 @@ let owner_eci = null
 var needed_console = false
 var needed_pico_debug = false
 
+async function fetch(url,options){
+  return await node_fetch(url,options)
+    .catch(function(e){
+      console.log(chalk.red(e.message));
+      process.exit(1)
+    })
+}
+
 async function install_url(engine_uri,rid_url){
   let res = await fetch(engine_uri+'/api/ruleset/register?url='+rid_url)
   res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/install_rulesets_requested?url='+rid_url)
@@ -40,7 +48,6 @@ async function installed_rulesets(url,eci){
 
 async function init_engine(url){
   let res = await fetch(url+'/api/engine-version')
-                  .catch(function(e){console.log(e.message);process.exit(1)})
   let version = (await res.json()).version
   console.log(`pico-engine version is ${version}`)
   res = await fetch(url+'/api/root-eci')
