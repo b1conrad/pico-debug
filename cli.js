@@ -48,6 +48,10 @@ async function installed_rulesets(url,eci){
 
 async function init_engine(url){
   let res = await fetch(url+'/api/engine-version')
+  if (res.status != 200) {
+    console.log(chalk.red(`Cannot obtain engine version (${res.status})`))
+    process.exit(1)
+  }
   let version = (await res.json()).version
   console.log(`pico-engine version is ${version}`)
   res = await fetch(url+'/api/root-eci')
