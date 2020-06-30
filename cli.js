@@ -25,7 +25,6 @@ var needed_pico_debug = false
 async function install_url(engine_uri,rid_url){
   let res = await fetch(engine_uri+'/api/ruleset/register?url='+rid_url)
   res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/install_rulesets_requested?url='+rid_url)
-  //console.log(JSON.stringify(await res.json()))
 }
 
 async function new_eci(url,eci){
@@ -46,7 +45,6 @@ async function init_engine(url){
   res = await fetch(url+'/api/root-eci')
   let root_eci = (await res.json()).eci
   let root_rulesets = await installed_rulesets(url,root_eci)
-  //console.log(`root_rulesets are ${JSON.stringify(root_rulesets)}`)
   let need_login = root_rulesets.indexOf('io.picolabs.account_management') >= 0
   if (need_login) {
     let temp_eci = null
@@ -106,13 +104,11 @@ async function init_engine(url){
 async function main () {
   let engine_uri, eci, rids
   let rid =rid_w
-  //console.log(`Hello world of ${args}`)
   if (/^https?:\/\//.test(args)) {
     engine_uri = args[0]
     console.log(`pico-engine is running at ${engine_uri}`)
     eci = await init_engine(engine_uri)
     rids = await installed_rulesets(engine_uri,eci)
-    //console.log(rids)
   } else {
     console.log('Usage: pico-debug pico-engine-url')
     process.exit(1)
@@ -135,15 +131,11 @@ async function main () {
     }
     while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
     if (/^(exit|quit)$/.test(the_query)) {
-      //console.log(`needed_console is ${needed_console}`)
       if (needed_console) {
         res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/uninstall_rulesets_requested?rid=console')
-        //console.log(JSON.stringify(await res.json()))
       }
-      //console.log(`needed_pico_debug is ${needed_pico_debug}`)
       if (needed_pico_debug) {
         res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/uninstall_rulesets_requested?rid=pico-debug')
-        //console.log(JSON.stringify(await res.json()))
       }
       break
     }
@@ -215,24 +207,19 @@ async function main () {
     the_query = the_query.replace(/\bRID\b/g, rid)
     console.log(`Your query is /${the_query.replace(/(.{63})..+/,'$1…')}`)
     let response = await fetch(engine_uri+'/'+the_query,the_options)
-    //console.log(JSON.stringify(response,null,2))
     if (response.status == 200) {
       let content_type = response.headers.get('content-type')
-      //console.log(content_type)
       if (/^application\/json;/.test(content_type)) {
         let json = await response.json()
         if (the_key) {
           bindings.set(the_key,JSON.stringify(json))
-          //console.log(bindings)
         } else {
-          //console.log(json)
           console.log(JSON.stringify(json,null,2))
         }
       } else if (/^text\/plain/.test(content_type)) {
         let body = await response.text()
         if (the_key) {
           bindings.set(the_key,body)
-          //console.log(bindings)
         } else {
           console.log(body)
         }
