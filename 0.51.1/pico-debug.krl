@@ -12,7 +12,7 @@ ruleset pico-debug {
     }
     rs = function(ops){
       rsn = random:uuid();
-      e = ops.math:base64decode();
+      e = math:base64decode(ops);
       <<
 ruleset #{rsn} {
   meta {
@@ -54,7 +54,7 @@ ruleset #{rsn} {
       where event:attr("rids") >< meta:rid
     pre {
       ops = event:attr("rs_attrs"){"ops"} || event:attr("ops")
-      e = ops.math:base64encode().replace(re#[+]#g,"-")
+      e = math:base64encode(ops).replace(re#[+]#g,"-")
       eci = event:attr("eci")
       url = <<#{meta:host}/sky/cloud/#{eci}/pico-debug/rs.txt?ops=#{e}>>
       picoId = event:attr("id")
