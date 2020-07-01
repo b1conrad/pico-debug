@@ -53,7 +53,7 @@ ruleset pico-debug-session {
     pre {
       eci = wrangler:parent_eci()
       picoId = engine:getPicoIDByECI(eci)
-      e = ops.math:base64encode().replace(re#[+]#g,"-")
+      e = math:base64encode(ops).replace(re#[+]#g,"-")
       url = <<#{meta:host}/sky/cloud/#{eci}/pico-debug/rs.txt?ops=#{e}>>
     }
     every {
