@@ -37,7 +37,6 @@ ruleset #{rsn} {
 }>>
     }
     session_url = "https://raw.githubusercontent.com/b1conrad/pico-debug/master/pico-debug-session.krl"
-    session_rid = "pico-debug-session"
   }
   rule create_child_pico {
     select when debug session_needed
@@ -71,6 +70,5 @@ ruleset #{rsn} {
   }
   rule clean_up {
     select when wrangler child_deleted
-      where event:attr("rids") >< session_rid
   }
 }
