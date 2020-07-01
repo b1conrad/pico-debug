@@ -13,8 +13,8 @@ ruleset pico-debug {
     }
     rs = function(ops){
       rsn = random:uuid();
-      e = ops.math:base64decode();
-      code = e.match(re#^[.[{]#) => "ent:obj"+e | e;
+      e = math:base64decode(ops);
+      code = e.match(re#^ #) => e | "ent:obj"+e;
       <<
 ruleset #{rsn} {
   meta {
