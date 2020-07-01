@@ -5,9 +5,10 @@ ruleset pico-debug {
   global {
     __testing = { "queries":
       [ { "name": "__testing" },
-        { "name": "rs", "args": [ "ops" ] }
+        { "name": "rs", "args": [ "ops_base64encoded" ] }
       ] , "events":
-      [ { "domain": "debug", "type": "obj_ops", "attrs": [ "obj", "ops" ] }
+      [ { "domain": "debug", "type": "session_needed", "attrs": [ "name" ] }
+      , { "domain": "debug", "type": "session_expired", "attrs": [ "eci" ] }
       ]
     }
     rs = function(ops){
@@ -35,56 +36,41 @@ ruleset #{rsn} {
   }
 }>>
     }
+    session_url = "https://raw.githubusercontent.com/b1conrad/pico-debug/master/pico-debug-session.krl"
+    session_rid = "pico-debug-session"
   }
   rule create_child_pico {
-    select when debug obj_ops
+    select when debug session_needed
     pre {
-      obj = event:attr("obj").decode()
-      ops = event:attr("ops")
+      name = event:attr("name") || random:uuid()
     }
-    if ops then noop()
     fired {
       raise wrangler event "new_child_request" attributes {
-        "name": random:uuid(), "rids": [meta:rid], "ops": ops
+        "name": name, "rids_from_url": session_url
       }
-      ent:obj := obj
     }
   }
-  rule evaluate_expression {
+  rule identify_session {
     select when wrangler new_child_created
-      where event:attr("rids") >< meta:rid
+      where event:attr("rids_from_url") >< session_url
     pre {
-      ops = event:attr("rs_attrs"){"ops"} || event:attr("ops")
-      e = ops.math:base64encode().replace(re#[+]#g,"-")
       eci = event:attr("eci")
-      url = <<#{meta:host}/sky/cloud/#{eci}/pico-debug/rs.txt?ops=#{e}>>
-      picoId = event:attr("id")
     }
-    every {
-      engine:registerRuleset(url=url) setting(rid)
-      engine:installRuleset(picoId,rid=rid)
-      event:send({"eci": eci, "domain": "debug", "type": "new_obj",
-        "attrs": {"obj": ent:obj}
-      })
-      http:get(<<#{meta:host}/sky/cloud/#{eci}/#{rid}/result>>) setting(res)
-      send_directive("_txt",{"content":res{"content"}})
-      engine:uninstallRuleset(picoId,rid)
-      engine:unregisterRuleset(rid)
-    }
-    fired {
-      raise wrangler event "child_deletion"
-        attributes event:attrs.delete("ops")
-    }
+    send_directive("_txt",{"content":eci.encode()})
   }
   rule do_nothing {
     select when wrangler child_initialized
-      where event:attr("rids") >< meta:rid
+      where event:attr("rids_from_url") >< session_url
+  }
+  rule remove_session {
+    select when debug session_expired eci re#(.+)# setting(eci)
+    fired {
+      raise wrangler event "child_deletion"
+        attributes {"id":engine:getPicoIDByECI(eci)}
+    }
   }
   rule clean_up {
     select when wrangler child_deleted
-      where event:attr("rids") >< meta:rid
-    fired {
-      clear ent:obj
-    }
+      where event:attr("rids") >< session_rid
   }
 }

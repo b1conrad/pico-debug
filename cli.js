@@ -120,6 +120,11 @@ async function main () {
   }
   let history = new Map()
   let bindings = new Map()
+
+  let res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/debug/session_needed')
+  let session_eci = await res.json()
+  console.log(`session eci is ${session_eci}`)
+
   while (true) {
     const prompt = new Input({
       message: 'query',
@@ -130,7 +135,6 @@ async function main () {
     })
     let the_key = null
     let the_query = await prompt.run()
-    let the_options = {}
     if (!the_query || the_query.length <= 0) {
       continue
     }
@@ -172,22 +176,24 @@ async function main () {
     }
     let exec_stmt = /^(\w+)([.[{].*)/.exec(the_query)
     if (exec_stmt) {
-      let the_var_val = bindings.get(exec_stmt[1])
+      let key = exec_stmt[1]
+      let the_var_val = bindings.get(key)
       if (the_var_val) {
         if (exec_stmt[2] == '.') {
           console.log(the_var_val)
           continue
         } else {
           let ops = encodeURIComponent(exec_stmt[2])
-          the_query = 'sky/event/'+owner_eci+'/none/debug/obj_ops?ops='+ops
-          the_options = {
+          the_query = 'sky/event/'+session_eci+'/none/session/obj_ops?ops='+ops+'&key='+key
+          await fetch(engine_uri+'/sky/event/'+session_eci+'/none/bindings/new?key='+key,
+          {
             method:'POST',
             headers: { "Content-Type": "application/json", },
-            body:JSON.stringify({"obj":the_var_val}),
-          }
+            body:JSON.stringify({"value":the_var_val}),
+          })
         }
       } else {
-        console.log(`nothing at ${exec_stmt[1]}`)
+        console.log(`nothing at ${key}`)
         continue
       }
     }
@@ -202,13 +208,13 @@ async function main () {
     let krl_stmt = /^krl (.*)/.exec(the_query)
     if (krl_stmt) {
       let the_krl = encodeURIComponent(krl_stmt[1])
-      the_query = 'sky/event/'+owner_eci+'/none/debug/obj_ops?ops='+the_krl
+      the_query = 'sky/event/'+session_eci+'/none/session/expr?expr='+the_krl
     }
     the_query = the_query.replace(/\bECI\b/g, eci)
     the_query = the_query.replace(/\bEID\b/g, 'none')
     the_query = the_query.replace(/\bRID\b/g, rid)
     console.log(`Your query is /${the_query.replace(/(.{63})..+/,'$1…')}`)
-    let response = await fetch(engine_uri+'/'+the_query,the_options)
+    let response = await fetch(engine_uri+'/'+the_query)
     if (response.status == 200) {
       let content_type = response.headers.get('content-type')
       if (/^application\/json;/.test(content_type)) {
@@ -239,6 +245,7 @@ async function main () {
       console.log(response.status,msg)
     }
   }
+  await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/debug/session_expired?eci='+session_eci)
   console.log('bye!')
 }
 
