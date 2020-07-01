@@ -56,6 +56,9 @@ ruleset #{rsn} {
       eci = event:attr("eci")
     }
     send_directive("_txt",{"content":eci.encode()})
+    fired {
+      ent:sessions := ent:sessions.defaultsTo([]).append(eci)
+    }
   }
   rule do_nothing {
     select when wrangler child_initialized
@@ -70,5 +73,13 @@ ruleset #{rsn} {
   }
   rule clean_up {
     select when wrangler child_deleted
+      where ent:sessions >< event:attr("eci")
+    pre {
+      remove_eci = function(x){x!=eci}
+      remaining_sessions = ent:sessions.filter(remove_eci)
+    }
+    fired {
+      ent:sessions := remaining_sessions
+    }
   }
 }
