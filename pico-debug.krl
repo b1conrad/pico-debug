@@ -13,6 +13,7 @@ ruleset pico-debug {
     rs = function(ops){
       rsn = random:uuid();
       e = ops.math:base64decode();
+      code = e.match(re#^[.[{]#) => "ent:obj"+e | e;
       <<
 ruleset #{rsn} {
   meta {
@@ -23,7 +24,7 @@ ruleset #{rsn} {
   }
   global {
     result=function(){
-      ent:obj#{e}
+      #{code}
     }
   }
   rule set_obj {

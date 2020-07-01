@@ -16,10 +16,8 @@ Input.prototype.down = Input.prototype.altDown
 
 const rid_w = 'io.picolabs.wrangler'
 const rid_vp = 'io.picolabs.visual_params'
-const url_console = 'https://raw.githubusercontent.com/Picolab/console/master/krl/console.krl'
 const url_pico_debug = 'https://raw.githubusercontent.com/b1conrad/pico-debug/master/pico-debug.krl'
 let owner_eci = null
-var needed_console = false
 var needed_pico_debug = false
 
 async function fetch(url,options){
@@ -93,11 +91,6 @@ async function init_engine(url){
     process.exit(1)
   }
   let owner_rulesets = await installed_rulesets(url,owner_eci)
-  needed_console = owner_rulesets.indexOf('console') < 0
-  //console.log(`needed_console is ${needed_console}`)
-  if (needed_console) {
-    await install_url(url,url_console)
-  }
   needed_pico_debug = owner_rulesets.indexOf('pico-debug') < 0
   if (needed_pico_debug) {
     await install_url(url,url_pico_debug)
@@ -143,9 +136,6 @@ async function main () {
     }
     while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
     if (/^(exit|quit)$/.test(the_query)) {
-      if (needed_console) {
-        res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/uninstall_rulesets_requested?rid=console')
-      }
       if (needed_pico_debug) {
         res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/uninstall_rulesets_requested?rid=pico-debug')
       }
@@ -212,7 +202,7 @@ async function main () {
     let krl_stmt = /^krl (.*)/.exec(the_query)
     if (krl_stmt) {
       let the_krl = encodeURIComponent(krl_stmt[1])
-      the_query = 'sky/event/'+owner_eci+'/none/console/expr?expr='+the_krl
+      the_query = 'sky/event/'+owner_eci+'/none/debug/obj_ops?ops='+the_krl
     }
     the_query = the_query.replace(/\bECI\b/g, eci)
     the_query = the_query.replace(/\bEID\b/g, 'none')
