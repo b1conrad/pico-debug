@@ -16,6 +16,10 @@ ruleset pico-debug-session {
     bindings = function(key){
       ent:bindings.get(key)
     }
+    get_result_and_send = defaction(eci,rid){
+      res = http:get(<<#{meta:host}/sky/cloud/#{eci}/#{rid}/result>>);
+      send_directive("_txt",{"content":res{"content"}})
+    }
   }
   rule intialization {
     select when wrangler ruleset_added
@@ -42,8 +46,7 @@ ruleset pico-debug-session {
     every {
       engine:registerRuleset(url=url) setting(rid)
       engine:installRuleset(picoId,rid=rid)
-      http:get(<<#{meta:host}/sky/cloud/#{eci}/#{rid}/result>>) setting(res)
-      send_directive("_txt",{"content":res{"content"}})
+      get_result_and_send(eci,rid)
       engine:uninstallRuleset(picoId,rid)
       engine:unregisterRuleset(rid)
     }
@@ -62,8 +65,7 @@ ruleset pico-debug-session {
       event:send({"eci": eci, "domain": "debug", "type": "new_obj",
         "attrs": {"obj": bindings(key)}
       })
-      http:get(<<#{meta:host}/sky/cloud/#{eci}/#{rid}/result>>) setting(res)
-      send_directive("_txt",{"content":res{"content"}})
+      get_result_and_send(eci,rid)
       engine:uninstallRuleset(picoId,rid)
       engine:unregisterRuleset(rid)
     }
