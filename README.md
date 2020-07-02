@@ -17,9 +17,20 @@ pico-debug http://localhost:8080
 
 The first argument must be a URL for a running pico-engine.
 
+If the pico-engine uses account management,
+you will next be prompted for a user ID and password.
+The pico thus selected is called the "owner pico" in what follows.
+Otherwise the root pico will be used as the owner pico.
+
+The owner pico will have the `pico-debug` ruleset installed in it.
+A child pico will be created for the owner pico which will
+have the `pico-debug-session` ruleset in it.
+These rulesets and the extra child pico will be removed when
+`pico-debug` terminates normally.
+
 When prompted, enter a URI path for a pico hosted on that engine,
 and that request will be sent to the engine running at localhost:8080
-and the response will be displayed as `stdout`.
+and the response will be displayed in-line, and you will be prompted again.
 
 ### Some queries and events to try
 
@@ -47,7 +58,8 @@ exit
 quit
 ```
 
-The first command, `eci ...` sets a "current" pico by giving its ECI and an optional label. The string "ECI" in any query will be replaced by the current ECI value.
+The first command, `eci ...` sets a "current" pico by giving its ECI and an optional label. 
+The string "ECI" in any query will be replaced by the current ECI value.
 
 The `rid` command will display a list of all of the rulesets installed in the current pico,
 allowing you to select one of them as the "current" ruleset.
@@ -59,11 +71,11 @@ The `exit` and `quit` commands will exit the `pico-debug` program.
 
 ### Command history
 
-All of the queries that you enter are kept in a history list. 
+All of the events/queries/commands that you enter are kept in a history list. 
 You can use the up and down arrow keys to navigate through this history.
 
 Before pressing Enter or Return to issue the query (or event),
-you can use the arrow keys to move through it,
+you can use the left and right arrow keys to move through it,
 the Delete and Backspace keys to remove characters in it,
 and Ctrl-A to move to the beginning of the line
 and Ctrl-E to move to the end of the line.
@@ -87,15 +99,12 @@ event wrangler/new_child_request?name=John&rids=io.picolabs.aca;io.picolabs.aca.
 The first example assumes that the current RID is `io.picolabs.wrangler`
 and queries for the children of the current pico.
 
-The second example creates a new pico named "John" which is an Aries agent.
+The second example creates a new child pico named "John" which is an Aries agent.
 
 ### Directly evaluate a KRL expression
 
-This new command requires that the pico-engine used has the `console` ruleset registered with it.
-This will be done by this program if necessary
-(meaning that after using the program, the `console`
-ruleset _will_ be registered with the pico-engine)
-so, if this is a problem you'll have to unregister it manually.
+This command allows you to evaluate a KRL expression in the context
+of the owner pico.
 
 Examples:
 
