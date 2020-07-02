@@ -244,7 +244,7 @@ async function main () {
   }
   await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/debug/session_expired?eci='+session_eci)
   if (needed_pico_debug) {
-    res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/uninstall_rulesets_requested?rid=pico-debug')
+    res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/uninstall_rulesets_requested?rids=pico-debug')
   }
   console.log('bye!')
 }
