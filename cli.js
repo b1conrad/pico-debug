@@ -140,9 +140,6 @@ async function main () {
     }
     while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
     if (/^(exit|quit)$/.test(the_query)) {
-      if (needed_pico_debug) {
-        res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/uninstall_rulesets_requested?rid=pico-debug')
-      }
       break
     }
     let eci_stmt = /^eci.([a-zA-Z0-9]+)/.exec(the_query)
@@ -246,6 +243,9 @@ async function main () {
     }
   }
   await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/debug/session_expired?eci='+session_eci)
+  if (needed_pico_debug) {
+    res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/uninstall_rulesets_requested?rid=pico-debug')
+  }
   console.log('bye!')
 }
 
