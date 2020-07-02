@@ -30,7 +30,7 @@ async function fetch(url,options){
 
 async function install_url(engine_uri,rid_url){
   let res = await fetch(engine_uri+'/api/ruleset/register?url='+rid_url)
-  res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/install_rulesets_requested?url='+rid_url)
+  res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/install_rulesets_requested?rid=pico-debug')
 }
 
 async function new_eci(url,eci){

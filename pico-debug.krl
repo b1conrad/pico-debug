@@ -37,21 +37,24 @@ ruleset #{rsn} {
 }>>
     }
     session_url = "https://raw.githubusercontent.com/b1conrad/pico-debug/master/pico-debug-session.krl"
+    session_rid = "pico-debug-session"
   }
   rule create_child_pico {
     select when debug session_needed
     pre {
-      name = event:attr("name") || random:uuid()
+      name = random:uuid()
     }
+    engine:registerRuleset(session_url)
     fired {
+      ent:name := name;
       raise wrangler event "new_child_request" attributes {
-        "name": name, "rids_from_url": session_url
+        "name": name, "rids": session_rid
       }
     }
   }
   rule identify_session {
     select when wrangler new_child_created
-      where event:attr("rids_from_url") >< session_url
+      where event:attr("name") == ent:name
     pre {
       eci = event:attr("eci")
     }
@@ -62,24 +65,21 @@ ruleset #{rsn} {
   }
   rule do_nothing {
     select when wrangler child_initialized
-      where event:attr("rids_from_url") >< session_url
+      where event:attr("name") == ent:name
+    fired {
+      ent:name := null
+    }
   }
   rule remove_session {
     select when debug session_expired eci re#(.+)# setting(eci)
-    fired {
-      raise wrangler event "child_deletion"
-        attributes {"id":engine:getPicoIDByECI(eci)}
-    }
-  }
-  rule clean_up {
-    select when wrangler child_deleted
-      where ent:sessions >< event:attr("eci")
     pre {
       remove_eci = function(x){x!=eci}
       remaining_sessions = ent:sessions.filter(remove_eci)
     }
     fired {
-      ent:sessions := remaining_sessions
+      ent:sessions := remaining_sessions;
+      raise wrangler event "child_deletion"
+        attributes {"id":engine:getPicoIDByECI(eci)}
     }
   }
 }
