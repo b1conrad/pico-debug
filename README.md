@@ -137,4 +137,7 @@ and the child pico named "Carol" (or `null`).
 ### Version notes
 
 This code has been tested with pico-engines at versions
-0.45.6, 0.51.1, and 0.52.4
+0.45.6, 
+0.49.2,
+0.51.1, 
+and 0.52.4
