@@ -98,8 +98,8 @@ ruleset #{rsn} {
     }
     fired {
       ent:sessions := remaining_sessions;
-      raise wrangler event "child_deletion"
-        attributes {"id":engine:getPicoIDByECI(eci)}
+      raise wrangler event "child_deletion_request"
+        attributes {"eci":eci}
     }
   }
 }
