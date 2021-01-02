@@ -38,7 +38,7 @@ ruleset #{rsn} {
 }>>
     }
     session_eci = function(){
-      wrangler:channels("pico-debug,session").head(){"id"}
+      wrangler:channels("pico-debug-session").head(){"id"}
     }
     session_rid = "pico-debug-session"
     tags = ["pico-debug"]

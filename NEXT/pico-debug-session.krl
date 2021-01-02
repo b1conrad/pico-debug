@@ -20,7 +20,7 @@ ruleset pico-debug-session {
       res = http:get(<<#{meta:host}/sky/cloud/#{eci}/#{rid}/result>>);
       send_directive("_txt",{"content":res{"content"}})
     }
-    tags = ["pico-debug","session"]
+    tags = ["pico-debug-session"]
     eventPolicy = {"allow":[{"domain":"session","name":"*"}],"deny":[]}
     queryPolicy = {"allow":[{"rid":meta:rid,"name":"*"}],"deny":[]}
   }
