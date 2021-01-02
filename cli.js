@@ -14,9 +14,13 @@ console.log(
 Input.prototype.up = Input.prototype.altUp
 Input.prototype.down = Input.prototype.altDown
 
+var version = null
+var v0 = function(){
+  return version < '1'
+}
+const rid_ui = 'io.picolabs.pico-engine-ui' // for version 1+
 const rid_w = 'io.picolabs.wrangler'
-const rid_vp = 'io.picolabs.visual_params'
-const url_pico_debug = 'https://raw.githubusercontent.com/b1conrad/pico-debug/master/pico-debug.krl'
+const rid_vp = 'io.picolabs.visual_params' // for version 0
 let owner_eci = null
 var needed_pico_debug = false
 
@@ -28,35 +32,82 @@ async function fetch(url,options){
     })
 }
 
-async function install_url(engine_uri,rid_url){
-  let res = await fetch(engine_uri+'/api/ruleset/register?url='+rid_url)
-  res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/install_rulesets_requested?rid=pico-debug')
+async function get_pico(url,eci){
+  let res = await fetch(url+'/c/'+eci+'/query/'+rid_ui+'/pico')
+  let pico = await res.json()
+  return pico
+}
+
+async function install_pico_debug(engine_uri){
+  const url_pico_debug = 'https://raw.githubusercontent.com/b1conrad/pico-debug/master/pico-debug.krl'
+  const next_url_pico_debug = 'https://raw.githubusercontent.com/b1conrad/pico-debug/master/NEXT/pico-debug.krl'
+  var res
+  if(v0()){
+    res = await fetch(engine_uri+'/api/ruleset/register?url='+url_pico_debug)
+    res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/install_rulesets_requested?rid=pico-debug')
+  } else {
+    res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/engine_ui/install?url='+next_url_pico_debug)
+  }
 }
 
 async function new_eci(url,eci){
-  let res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_vp+'/dname')
-  let pico_name = await res.text()
+  var res, pico_name
+  if (v0()){
+    res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_vp+'/dname')
+    pico_name = await res.text()
+  } else {
+    res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_ui+'/box')
+    let box = await res.json()
+    pico_name = box.name
+  }
   console.log(`pico name is ${pico_name}`)
 }
 
 async function installed_rulesets(url,eci){
-  let res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_w+'/installedRulesets')
-  return await res.json()
+  if (v0()) {
+    let res = await fetch(url+'/sky/cloud/'+eci+'/'+rid_w+'/installedRulesets')
+    return await res.json()
+  } else {
+    let pico = await get_pico(url,eci)
+    let rids = []
+    let rulesets = pico.rulesets
+    for(var i=0; i<rulesets.length; ++i){
+      rids.push(rulesets[i].rid)
+    }
+    return rids
+  }
+}
+
+async function get_context(url){
+  let res = await fetch(url+'/api/engine-version')
+  if (res.status != 200) {
+    res = await fetch(url+'/api/ui-context')
+    if (res.status != 200) {
+      console.log(chalk.red(`Cannot obtain engine version (${res.status})`))
+      process.exit(1)
+    }
+    return await res.json()
+  }
+  let version = (await res.json()).version
+  res = await fetch(url+'/api/root-eci')
+  let root_eci = (await res.json()).eci
+  return {version:version,eci:root_eci}
+}
+
+async function need_login(url,root_eci){
+  if(!v0()) {
+    return false
+  }
+  let root_rulesets = await installed_rulesets(url,root_eci)
+  return  root_rulesets.indexOf('io.picolabs.account_management') >= 0
 }
 
 async function init_engine(url){
-  let res = await fetch(url+'/api/engine-version')
-  if (res.status != 200) {
-    console.log(chalk.red(`Cannot obtain engine version (${res.status})`))
-    process.exit(1)
-  }
-  let version = (await res.json()).version
+  let context_map = await get_context(url)
+  version = context_map.version
   console.log(`pico-engine version is ${version}`)
-  res = await fetch(url+'/api/root-eci')
-  let root_eci = (await res.json()).eci
-  let root_rulesets = await installed_rulesets(url,root_eci)
-  let need_login = root_rulesets.indexOf('io.picolabs.account_management') >= 0
-  if (need_login) {
+  let root_eci = context_map.eci
+  if (await need_login(url,root_eci)) {
     let temp_eci = null
     let prompt = new Input({message:'Who are you?',initial:'Owner id or DID'})
     let owner_id = await prompt.run()
@@ -93,22 +144,35 @@ async function init_engine(url){
   let owner_rulesets = await installed_rulesets(url,owner_eci)
   needed_pico_debug = owner_rulesets.indexOf('pico-debug') < 0
   if (needed_pico_debug) {
-    await install_url(url,url_pico_debug)
+    await install_pico_debug(url)
   }
   console.log(`current ECI is ${owner_eci}`)
   console.log(`current EID is none`)
-  console.log(`current RID is ${rid_w}`)
-  res = await fetch(url+'/sky/cloud/'+owner_eci+'/'+rid_w+'/channel?value='+owner_eci)
-  let channel = await res.json()
-  console.log(`channel type is ${channel.type}`)
-  console.log(`channel name is ${channel.name}`)
+  console.log(`current RID is ${!v0() ? rid_ui : rid_w}`)
+  if (v0()){
+    res = await fetch(url+'/sky/cloud/'+owner_eci+'/'+rid_w+'/channel?value='+owner_eci)
+    let channel = await res.json()
+    console.log(`channel type is ${channel.type}`)
+    console.log(`channel name is ${channel.name}`)
+  } else {
+    let pico = await get_pico(url,owner_eci)
+    let channels = pico.channels
+    let channel = null
+    for(var i=0; i<channels.length; ++i){
+      if(channels[i].id === owner_eci){
+        channel = channels[i]
+        break
+      }
+    }
+    console.log(`channel tags are ${JSON.stringify(channel.tags)}`)
+  }
   await new_eci(url,owner_eci)
   return owner_eci
 }
 
 async function main () {
   let engine_uri, eci, rids
-  let rid =rid_w
+  let rid =!v0() ? rid_ui : rid_w
   if (/^https?:\/\//.test(args)) {
     engine_uri = args[0]
     console.log(`pico-engine is running at ${engine_uri}`)
@@ -121,8 +185,39 @@ async function main () {
   let history = new Map()
   let bindings = new Map()
 
-  let res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/debug/session_needed')
-  let session_eci = await res.json()
+  var session_eci = null
+  var res = null
+  var pico_debug_eci = null // only used for 1.0.0
+  var pico_debug_session_eci = null // only used for 1.0.0
+  if(v0()){
+    res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/debug/session_needed')
+    session_eci = await res.json()
+  } else {
+    var pico = await get_pico(engine_uri,owner_eci)
+    let channels = pico.channels
+    for(var i=0; i<channels.length; ++i){
+      let channel_tags = channels[i].tags
+      if(channel_tags.length === 1 && channel_tags[0] === 'pico-debug'){
+        pico_debug_eci = channels[i].id
+        break
+      }
+    }
+    console.log(`pico_debug_eci is ${pico_debug_eci}`)
+    res = await fetch(engine_uri+'/c/'+pico_debug_eci+'/event/debug/session_needed/query/pico-debug/session_eci')
+    pico_debug_session_eci = JSON.parse(await res.text())
+    console.log(`pico_debug_session_eci is ${pico_debug_session_eci}`)
+    res = await fetch(engine_uri+'/sky/cloud/'+owner_eci+'/'+rid_ui+'/box')
+    let box = await res.json()
+    var pico = await get_pico(engine_uri,box.children[box.children.length-1])
+    channels = pico.channels
+    for(var i=0; i<channels.length; ++i){
+      let channel_tags = channels[i].tags
+      if(channel_tags.length === 1 && channel_tags[0] === 'pico-debug-session'){
+        session_eci = channels[i].id
+        break
+      }
+    }
+  }
   console.log(`session eci is ${session_eci}`)
 
   while (true) {
@@ -242,9 +337,18 @@ async function main () {
       console.log(response.status,msg)
     }
   }
-  await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/debug/session_expired?eci='+session_eci)
+  if(v0()){
+    await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/debug/session_expired?eci='+session_eci)
+  } else {
+    await fetch(engine_uri+'/sky/event/'+pico_debug_eci+'/none/debug/session_expired?eci='+pico_debug_session_eci)
+  }
   if (needed_pico_debug) {
-    res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/uninstall_rulesets_requested?rids=pico-debug')
+    if(v0()){
+      res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/wrangler/uninstall_rulesets_requested?rids=pico-debug')
+    } else {
+      res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/engine_ui/uninstall?rid=pico-debug')
+      res = await fetch(engine_uri+'/sky/event/'+owner_eci+'/none/engine_ui/del_channel?eci='+pico_debug_eci)
+    }
   }
   console.log('bye!')
 }
