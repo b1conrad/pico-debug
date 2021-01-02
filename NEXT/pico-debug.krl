@@ -1,5 +1,6 @@
 ruleset pico-debug {
   meta {
+    use module io.picolabs.wrangler alias wrangler
     shares __testing, rs
   }
   global {
@@ -38,6 +39,18 @@ ruleset #{rsn} {
     }
     session_url = "https://raw.githubusercontent.com/b1conrad/pico-debug/master/pico-debug-session.krl"
     session_rid = "pico-debug-session"
+    tags = ["pico-debug"]
+    eventPolicy = {"allow":[{"domain":"debug","name":"*"}],"deny":[]}
+    queryPolicy = {"allow":[{"rid":meta:rid,"name":"*"}],"deny":[]}
+  }
+  rule initialize {
+    select when wrangler ruleset_installed
+      where event:attr("rids") >< meta:rid
+    if ent:debug_channel.isnull() then
+      wrangler:createChannel(tags,eventPolicy,queryPolicy) setting(channel)
+    fired {
+      ent:debug_channel := channel
+    }
   }
   rule create_child_pico {
     select when debug session_needed
