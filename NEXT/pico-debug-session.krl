@@ -25,7 +25,7 @@ ruleset pico-debug-session {
     queryPolicy = {"allow":[{"rid":meta:rid,"name":"*"}],"deny":[]}
   }
   rule intialization {
-    select when wrangler ruleset_added
+    select when wrangler ruleset_installed
       where event:attr("rids") >< meta:rid
     if ent:bindings.isnull() then 
       wrangler:createChannel(tags,eventPolicy,queryPolicy) setting(channel)
