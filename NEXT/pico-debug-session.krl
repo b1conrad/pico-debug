@@ -51,7 +51,7 @@ ruleset pico-debug-session {
     }
   }
   rule install_krl_ruleset {
-    select when wrangler:child_created
+    select when wrangler new_child_created
     event:send({"eci": event:attr("eci"),
       "domain": "wrangler", "type": "install_ruleset_request",
       "attrs":{
