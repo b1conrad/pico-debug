@@ -30,6 +30,15 @@ ruleset pico-debug-session {
     eventPolicy = {"allow":[{"domain":"session","name":"*"}],"deny":[]}
     queryPolicy = {"allow":[{"rid":meta:rid,"name":"*"}],"deny":[]}
   }
+  rule new_child_initialization {
+    select when wrangler pico_created
+    pre {
+      pico_debug_channel = event:attr("pico_debug_channel")
+    }
+    fired {
+      ent:pico_debug_channel_eci := pico_debug_channel{"id"}.krl("eci")
+    }
+  }
   rule intialization {
     select when wrangler ruleset_installed
       where event:attr("rids") >< meta:rid
@@ -49,7 +58,7 @@ ruleset pico-debug-session {
   rule evaluate_expr {
     select when session expr expr re#(.+)# setting(expr)
     pre {
-      eci = wrangler:parent_eci()
+      eci = ent:pico_debug_channel_eci
       e = math:base64encode(" "+expr).replace(re#[+]#g,"-")
       url = <<#{meta:host}/sky/cloud/#{eci}/pico-debug/rs.txt?ops=#{e}>>
       debug = url.klog("url")

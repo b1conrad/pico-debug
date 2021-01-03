@@ -42,7 +42,8 @@ ruleset #{rsn} {
     }
     session_rid = "pico-debug-session"
     tags = ["pico-debug"]
-    eventPolicy = {"allow":[{"domain":"debug","name":"*"}],"deny":[]}
+    eventPolicy = {"allow":[{"domain":"debug","name":"*"},
+                             "domain":"wrangler","name":"*"}],"deny":[]}
     queryPolicy = {"allow":[{"rid":meta:rid,"name":"*"}],"deny":[]}
   }
   rule initialize {
@@ -62,7 +63,7 @@ ruleset #{rsn} {
     fired {
       ent:name := name;
       raise wrangler event "new_child_request" attributes {
-        "name": name
+        "name": name, "pico_debug_channel":wrangler:channels(tags).head()
       }
     }
   }
