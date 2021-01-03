@@ -172,7 +172,6 @@ async function init_engine(url){
 
 async function main () {
   let engine_uri, eci, rids
-  let rid =!v0() ? rid_ui : rid_w
   if (/^https?:\/\//.test(args)) {
     engine_uri = args[0]
     console.log(`pico-engine is running at ${engine_uri}`)
@@ -182,6 +181,7 @@ async function main () {
     console.log('Usage: pico-debug pico-engine-url')
     process.exit(1)
   }
+  let rid = !v0() ? rid_ui : rid_w
   let history = new Map()
   let bindings = new Map()
 
