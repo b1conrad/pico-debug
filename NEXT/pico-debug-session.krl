@@ -16,13 +16,17 @@ ruleset pico-debug-session {
     bindings = function(key){
       ent:bindings.get(key)
     }
-    get_result_and_send = defaction(eci,rid){
+    get_result_and_send = defaction(pico_eci,eci,rid){
       res = http:get(<<#{meta:host}/sky/cloud/#{eci}/#{rid}/result>>);
       every {
         send_directive("_txt",{"content":res{"content"}})
-        event:send({"eci":eci,
+        event:send({"eci": pico_eci,
           "domain":"wrangler","type":"uninstall_ruleset_request",
           "attrs":{"rid":rid}
+        })
+        event:send({"eci": pico_eci,
+          "domain": "wrangler", "type": "channel_deletion_request",
+          "attrs": {"eci": eci}
         })
       }
     }
@@ -96,7 +100,7 @@ ruleset pico-debug-session {
         },rid="io.picolabs.wrangler",queryName="channels",
         args={"tags":"result"}
       ) setting(new_channel)
-      get_result_and_send(new_channel.head(){"id"},rids.reverse().head())
+      get_result_and_send(eci,new_channel.head(){"id"},rids.reverse().head())
     }
   }
   rule evaluate_obj_ops {
