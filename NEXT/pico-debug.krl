@@ -43,9 +43,14 @@ ruleset #{rsn} {
     }
     session_rid = "pico-debug-session"
     tags = ["pico-debug"]
-    eventPolicy = {"allow":[{"domain":"debug","name":"*"},
-                            {"domain":"wrangler","name":"*"}],"deny":[]}
-    queryPolicy = {"allow":[{"rid":meta:rid,"name":"*"}],"deny":[]}
+    eventPolicy = {"allow":
+      [ {"domain":"debug","name":"*"}
+      , {"domain":"wrangler","name":"*"}
+      ],"deny":[]}
+    queryPolicy = {"allow":
+      [ {"rid":meta:rid,"name":"*"}
+      , {"rid":"io.picolabs.wrangler","name":"*"}
+      ],"deny":[]}
     debug_channel = function(){
       ent:debug_channel
     }
