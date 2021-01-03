@@ -36,7 +36,7 @@ ruleset pico-debug-session {
       pico_debug_channel = event:attr("pico_debug_channel")
     }
     fired {
-      ent:pico_debug_channel_eci := pico_debug_channel{"id"}.krl("eci")
+      ent:pico_debug_channel_eci := pico_debug_channel{"id"}.klog("eci")
     }
   }
   rule intialization {

@@ -43,7 +43,7 @@ ruleset #{rsn} {
     session_rid = "pico-debug-session"
     tags = ["pico-debug"]
     eventPolicy = {"allow":[{"domain":"debug","name":"*"},
-                             "domain":"wrangler","name":"*"}],"deny":[]}
+                            {"domain":"wrangler","name":"*"}],"deny":[]}
     queryPolicy = {"allow":[{"rid":meta:rid,"name":"*"}],"deny":[]}
   }
   rule initialize {
