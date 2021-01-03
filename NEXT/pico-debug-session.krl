@@ -27,7 +27,10 @@ ruleset pico-debug-session {
       }
     }
     tags = ["pico-debug-session"]
-    eventPolicy = {"allow":[{"domain":"session","name":"*"}],"deny":[]}
+    eventPolicy = {"allow":
+      [{"domain":"session","name":"*"}
+      ,{"domain":"bindings","name":"new"}
+      ],"deny":[]}
     queryPolicy = {"allow":[{"rid":meta:rid,"name":"*"}],"deny":[]}
   }
   rule intialization {
@@ -42,6 +45,25 @@ ruleset pico-debug-session {
       ent:bindings := {}
       ent:channel_eci := channel{"id"}
       ent:pico_debug_channel_eci := pico_debug_channel{"id"}.klog("eci")
+      raise wrangler event "new_child_request" attributes {
+        "name": random:uuid()
+      }
+    }
+  }
+  rule install_krl_ruleset {
+    select when wrangler:child_created
+    event:send({"eci": event:attr("eci"),
+      "domain": "wrangler", "type": "install_ruleset_request",
+      "attrs":{
+        "absoluteURL": meta:rulesetURI,
+        "rid": "pico-debug-krl",
+      }
+    })
+  }
+  rule save_krl_eci {
+    select when session new_krl_eci
+    fired {
+      ent:krl_eci := event:attr("eci")
     }
   }
   rule set_binding {
@@ -55,7 +77,7 @@ ruleset pico-debug-session {
     pre {
       eci = ent:pico_debug_channel_eci
       e = math:base64encode(" "+expr).replace(re#[+]#g,"-")
-      url = <<#{meta:host}/sky/cloud/#{eci}/pico-debug/rs.txt?ops=#{e}>>
+      url = <<#{meta:host}/sky/cloud/#{ent:krl_eci}/pico-debug/rs.txt?ops=#{e}>>
       debug = url.klog("url")
     }
     every {

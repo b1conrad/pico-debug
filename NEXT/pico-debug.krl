@@ -1,42 +1,16 @@
 ruleset pico-debug {
   meta {
     use module io.picolabs.wrangler alias wrangler
-    shares __testing, rs, session_eci
+    shares __testing, session_eci
   }
   global {
     __testing = { "queries":
       [ { "name": "__testing" }
-      , { "name": "rs", "args": [ "ops_base64encoded" ] }
       , { "name": "debug_channel" }
       ] , "events":
       [ { "domain": "debug", "type": "session_needed", "attrs": [ "name" ] }
       , { "domain": "debug", "type": "session_expired", "attrs": [ "eci" ] }
       ]
-    }
-    rs = function(ops){
-      rsn = random:uuid();
-      e = math:base64decode(ops);
-      code = e.match(re#^ #) => e | "ent:obj"+e;
-      <<
-ruleset #{rsn} {
-  meta {
-    use module io.picolabs.wrangler alias wrangler
-    use module io.picolabs.subscription alias subs
-    shares result
-  }
-  global {
-    result=function(){
-      #{code}
-    }
-  }
-  rule set_obj {
-    select when debug new_obj
-    fired {
-      ent:obj := event:attr("obj")
-    }
-  }
-}
->>
     }
     session_eci = function(){
       ent:session_eci
