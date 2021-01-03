@@ -5,8 +5,9 @@ ruleset pico-debug {
   }
   global {
     __testing = { "queries":
-      [ { "name": "__testing" },
-        { "name": "rs", "args": [ "ops_base64encoded" ] }
+      [ { "name": "__testing" }
+      , { "name": "rs", "args": [ "ops_base64encoded" ] }
+      , { "name": "debug_channel" }
       ] , "events":
       [ { "domain": "debug", "type": "session_needed", "attrs": [ "name" ] }
       , { "domain": "debug", "type": "session_expired", "attrs": [ "eci" ] }
@@ -45,6 +46,9 @@ ruleset #{rsn} {
     eventPolicy = {"allow":[{"domain":"debug","name":"*"},
                             {"domain":"wrangler","name":"*"}],"deny":[]}
     queryPolicy = {"allow":[{"rid":meta:rid,"name":"*"}],"deny":[]}
+    debug_channel = function(){
+      ent:debug_channel
+    }
   }
   rule initialize {
     select when wrangler ruleset_installed
@@ -78,7 +82,7 @@ ruleset #{rsn} {
       "attrs":{
         "absoluteURL":meta:rulesetURI,
         "rid":session_rid,
-        "pico_debug_channel":wrangler:channels(tags).head(),
+        "pico_debug_channel":ent:debug_channel,
       }
     })
     fired {
