@@ -63,7 +63,7 @@ ruleset #{rsn} {
     fired {
       ent:name := name;
       raise wrangler event "new_child_request" attributes {
-        "name": name, "pico_debug_channel":wrangler:channels(tags).head()
+        "name": name
       }
     }
   }
@@ -78,6 +78,7 @@ ruleset #{rsn} {
       "attrs":{
         "absoluteURL":meta:rulesetURI,
         "rid":session_rid,
+        "pico_debug_channel":wrangler:channels(tags).head(),
       }
     })
     fired {

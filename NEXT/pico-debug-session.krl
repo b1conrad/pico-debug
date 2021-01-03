@@ -30,23 +30,18 @@ ruleset pico-debug-session {
     eventPolicy = {"allow":[{"domain":"session","name":"*"}],"deny":[]}
     queryPolicy = {"allow":[{"rid":meta:rid,"name":"*"}],"deny":[]}
   }
-  rule new_child_initialization {
-    select when wrangler pico_created
-    pre {
-      pico_debug_channel = event:attr("pico_debug_channel")
-    }
-    fired {
-      ent:pico_debug_channel_eci := pico_debug_channel{"id"}.klog("eci")
-    }
-  }
   rule intialization {
     select when wrangler ruleset_installed
       where event:attr("rids") >< meta:rid
+    pre {
+      pico_debug_channel = event:attr("pico_debug_channel")
+    }
     if ent:bindings.isnull() then 
       wrangler:createChannel(tags,eventPolicy,queryPolicy) setting(channel)
     fired {
       ent:bindings := {}
       ent:channel_eci := channel{"id"}
+      ent:pico_debug_channel_eci := pico_debug_channel{"id"}.klog("eci")
     }
   }
   rule set_binding {
