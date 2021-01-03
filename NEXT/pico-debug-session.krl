@@ -52,6 +52,7 @@ ruleset pico-debug-session {
       eci = wrangler:parent_eci()
       e = math:base64encode(" "+expr).replace(re#[+]#g,"-")
       url = <<#{meta:host}/sky/cloud/#{eci}/pico-debug/rs.txt?ops=#{e}>>
+      debug = url.klog("url")
     }
     every {
       ctx:eventQuery(eci=eci,

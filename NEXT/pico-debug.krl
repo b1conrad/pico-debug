@@ -34,7 +34,8 @@ ruleset #{rsn} {
       ent:obj := event:attr("obj")
     }
   }
-}>>
+}
+>>
     }
     session_eci = function(){
       ent:session_eci
