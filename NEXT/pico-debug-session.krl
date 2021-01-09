@@ -112,20 +112,16 @@ ruleset pico-debug-session {
   rule evaluate_obj_ops {
     select when session obj_ops key re#(.+)# ops re#(.+)# setting(key,ops)
     pre {
-      eci = wrangler:parent_eci()
-      picoId = engine:getPicoIDByECI(eci)
+      eci = ent:pico_debug_channel_eci
       e = math:base64encode(ops).replace(re#[+]#g,"-")
       url = <<#{meta:host}/sky/cloud/#{eci}/pico-debug/rs.txt?ops=#{e}>>
+      debug = url.klog("url")
     }
     every {
-      engine:registerRuleset(url=url) setting(rid)
-      engine:installRuleset(picoId,rid=rid)
       event:send({"eci": eci, "domain": "debug", "type": "new_obj",
         "attrs": {"obj": bindings(key)}
       })
-      get_result_and_send(eci,rid)
-      engine:uninstallRuleset(picoId,rid)
-      engine:unregisterRuleset(rid)
+      get_result_and_send(eci,url)
     }
   }
 }
