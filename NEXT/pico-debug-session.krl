@@ -114,7 +114,7 @@ ruleset pico-debug-session {
     pre {
       eci = ent:pico_debug_channel_eci
       e = math:base64encode(ops).replace(re#[+]#g,"-")
-      url = <<#{meta:host}/sky/cloud/#{eci}/pico-debug/rs.txt?ops=#{e}>>
+      url = <<#{meta:host}/sky/cloud/#{ent:krl_eci}/pico-debug-krl/rs.txt?ops=#{e}>>
       debug = url.klog("url")
     }
     every {
