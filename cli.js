@@ -71,8 +71,10 @@ async function installed_rulesets(url,eci){
     let pico = await get_pico(url,eci)
     let rids = []
     let rulesets = pico.rulesets
-    for(var i=0; i<rulesets.length; ++i){
-      rids.push(rulesets[i].rid)
+    if(rulesets && rulesets.length){
+      for(var i=0; i<rulesets.length; ++i){
+        rids.push(rulesets[i].rid)
+      }
     }
     return rids
   }
@@ -195,11 +197,13 @@ async function main () {
   } else {
     var pico = await get_pico(engine_uri,owner_eci)
     let channels = pico.channels
-    for(var i=0; i<channels.length; ++i){
-      let channel_tags = channels[i].tags
-      if(channel_tags.length === 1 && channel_tags[0] === 'pico-debug'){
-        pico_debug_eci = channels[i].id
-        break
+    if(channels && channels.length){
+      for(var i=0; i<channels.length; ++i){
+        let channel_tags = channels[i].tags
+        if(channel_tags.length === 1 && channel_tags[0] === 'pico-debug'){
+          pico_debug_eci = channels[i].id
+          break
+        }
       }
     }
     console.log(`pico_debug_eci is ${pico_debug_eci}`)
