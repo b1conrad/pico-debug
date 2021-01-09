@@ -13,5 +13,4 @@ A different version for 1.0.0 in this folder
 Currently works in pico-engine 1.0.0 except for
 
 - `eci` statements
-- KRL operators
 
