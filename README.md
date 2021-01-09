@@ -4,7 +4,7 @@ command line debugger for picos
 ## Installation
 clone this repo
 ```
-git clone git@github.com:b1conrad/pico-debug.git
+git clone https://github.com/b1conrad/pico-debug.git
 cd pico-debug
 npm install
 npm link
