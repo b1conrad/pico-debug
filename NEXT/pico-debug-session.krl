@@ -16,17 +16,40 @@ ruleset pico-debug-session {
     bindings = function(key){
       ent:bindings.get(key)
     }
-    get_result_and_send = defaction(pico_eci,eci,rid){
-      res = http:get(<<#{meta:host}/sky/cloud/#{eci}/#{rid}/result>>);
+    get_result = function(eci,rid){
+      http:get(<<#{meta:host}/sky/cloud/#{eci}/#{rid}/result>>)
+    }
+    get_result_and_send = defaction(pico_eci,url){
       every {
-        send_directive("_txt",{"content":res{"content"}})
+        ctx:eventQuery(eci=pico_eci,
+          domain="wrangler", name="install_ruleset_request",
+          attrs={"url":url},
+          rid="io.picolabs.wrangler",queryName="installedRIDs",
+          args={"tags":"console"}
+        ) setting(rids)
+        ctx:eventQuery(eci=pico_eci,
+          domain="wrangler", name="new_channel_request",
+          attrs={
+            "tags":["result"],
+            "eventPolicy":{"allow":[],"deny":[{"domain":"*","name":"*"}]},
+            "queryPolicy":{"allow":[{"rid":rids.reverse().head(),"name":"result"}],"deny":[]}
+          },rid="io.picolabs.wrangler",queryName="channels",
+          args={"tags":"result"}
+        ) setting(new_channel)
+        send_directive("_txt",{
+          "content":
+            get_result(
+              new_channel.head(){"id"},
+              rids.reverse().head()
+            ){"content"}
+        })
         event:send({"eci": pico_eci,
           "domain":"wrangler","type":"uninstall_ruleset_request",
-          "attrs":{"rid":rid}
+          "attrs":{"rid": rids.reverse().head()}
         })
         event:send({"eci": pico_eci,
           "domain": "wrangler", "type": "channel_deletion_request",
-          "attrs": {"eci": eci}
+          "attrs": {"eci": new_channel.head(){"id"}}
         })
       }
     }
@@ -84,24 +107,7 @@ ruleset pico-debug-session {
       url = <<#{meta:host}/sky/cloud/#{ent:krl_eci}/pico-debug-krl/rs.txt?ops=#{e}>>
       debug = url.klog("url")
     }
-    every {
-      ctx:eventQuery(eci=eci,
-        domain="wrangler", name="install_ruleset_request",
-        attrs={"url":url},
-        rid="io.picolabs.wrangler",queryName="installedRIDs",
-        args={"tags":"console"}
-      ) setting(rids)
-      ctx:eventQuery(eci=eci,
-        domain="wrangler", name="new_channel_request",
-        attrs={
-          "tags":["result"],
-          "eventPolicy":{"allow":[],"deny":[{"domain":"*","name":"*"}]},
-          "queryPolicy":{"allow":[{"rid":rids.reverse().head(),"name":"result"}],"deny":[]}
-        },rid="io.picolabs.wrangler",queryName="channels",
-        args={"tags":"result"}
-      ) setting(new_channel)
-      get_result_and_send(eci,new_channel.head(){"id"},rids.reverse().head())
-    }
+    get_result_and_send(eci,url)
   }
   rule evaluate_obj_ops {
     select when session obj_ops key re#(.+)# ops re#(.+)# setting(key,ops)
