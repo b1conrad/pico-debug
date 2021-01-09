@@ -16,18 +16,15 @@ ruleset pico-debug-session {
     bindings = function(key){
       ent:bindings.get(key)
     }
-    get_result = function(eci,rid){
-      http:get(<<#{meta:host}/sky/cloud/#{eci}/#{rid}/result>>)
-    }
-    get_result_and_send = defaction(pico_eci,url){
+    install_ruleset_and_create_channel = defaction(debug_eci,url){
       every {
-        ctx:eventQuery(eci=pico_eci,
+        ctx:eventQuery(eci=debug_eci,
           domain="wrangler", name="install_ruleset_request",
           attrs={"url":url},
           rid="io.picolabs.wrangler",queryName="installedRIDs",
           args={"tags":"console"}
         ) setting(rids)
-        ctx:eventQuery(eci=pico_eci,
+        ctx:eventQuery(eci=debug_eci,
           domain="wrangler", name="new_channel_request",
           attrs={
             "tags":["result"],
@@ -36,20 +33,21 @@ ruleset pico-debug-session {
           },rid="io.picolabs.wrangler",queryName="channels",
           args={"tags":"result"}
         ) setting(new_channel)
+      }
+      return {"rid":rids.reverse().head(),"eci":new_channel.head(){"id"}}
+    }
+    get_result_and_send = defaction(debug_eci,rid,eci){
+      every {
         send_directive("_txt",{
-          "content":
-            get_result(
-              new_channel.head(){"id"},
-              rids.reverse().head()
-            ){"content"}
+          "content": http:get(<<#{meta:host}/sky/cloud/#{eci}/#{rid}/result>>){"content"}
         })
-        event:send({"eci": pico_eci,
+        event:send({"eci": debug_eci,
           "domain":"wrangler","type":"uninstall_ruleset_request",
-          "attrs":{"rid": rids.reverse().head()}
+          "attrs":{"rid": rid}
         })
-        event:send({"eci": pico_eci,
+        event:send({"eci": debug_eci,
           "domain": "wrangler", "type": "channel_deletion_request",
-          "attrs": {"eci": new_channel.head(){"id"}}
+          "attrs": {"eci": eci}
         })
       }
     }
@@ -107,7 +105,10 @@ ruleset pico-debug-session {
       url = <<#{meta:host}/sky/cloud/#{ent:krl_eci}/pico-debug-krl/rs.txt?ops=#{e}>>
       debug = url.klog("url")
     }
-    get_result_and_send(eci,url)
+    every {
+      install_ruleset_and_create_channel(eci,url) setting(rid_eci)
+      get_result_and_send(eci,rid_eci{"rid"},rid_eci{"eci"})
+    }
   }
   rule evaluate_obj_ops {
     select when session obj_ops key re#(.+)# ops re#(.+)# setting(key,ops)
@@ -118,10 +119,11 @@ ruleset pico-debug-session {
       debug = url.klog("url")
     }
     every {
-      event:send({"eci": eci, "domain": "debug", "type": "new_obj",
-        "attrs": {"obj": bindings(key)}
+      install_ruleset_and_create_channel(eci,url) setting(rid_eci)
+      event:send({"eci": wrangler:parent_eci(), "domain": "debug", "type": "new_obj",
+        "attrs": {"rid":rid_eci{"rid"}, "obj": bindings(key)}
       })
-      get_result_and_send(eci,url)
+      get_result_and_send(eci,rid_eci{"rid"},rid_eci{"eci"})
     }
   }
 }

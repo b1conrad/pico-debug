@@ -22,6 +22,7 @@ ruleset #{rsn} {
   }
   rule set_obj {
     select when debug new_obj
+      where event:attr("rid") == meta:rid
     fired {
       ent:obj := event:attr("obj")
     }
