@@ -316,10 +316,24 @@ async function main () {
       let content_type = response.headers.get('content-type')
       if (/^application\/json;/.test(content_type)) {
         let json = await response.json()
-        if (the_key) {
-          bindings.set(the_key,JSON.stringify(json))
+        if (!v0() // may need to simulate a "_txt" directive
+          && json.directives && json.directives[0]
+          && json.directives[0].name === '_txt'
+          && json.directives[0].options
+          && json.directives[0].options.content)
+        {
+          let body = json.directives[0].options.content
+          if (the_key) {
+            bindings.set(the_key,body)
+          } else {
+            console.log(body)
+          }
         } else {
-          console.log(JSON.stringify(json,null,2))
+          if (the_key) {
+            bindings.set(the_key,JSON.stringify(json))
+          } else {
+            console.log(JSON.stringify(json,null,2))
+          }
         }
       } else if (/^text\/plain/.test(content_type)) {
         let body = await response.text()
