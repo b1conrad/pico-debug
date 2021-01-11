@@ -269,6 +269,7 @@ async function main () {
     if (assign_stmt) {
       the_key = assign_stmt[1]
       the_query = assign_stmt[2]
+      while (the_query.charAt(0) === '/') the_query = the_query.substr(1)
     }
     let exec_stmt = /^(\w+)([.[{].*)/.exec(the_query)
     if (exec_stmt) {
