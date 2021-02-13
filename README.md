@@ -37,13 +37,19 @@ and the response will be displayed in-line, and you will be prompted again.
 ```
 /api/ui-context
 /sky/cloud/<ECI>/io.picolabs.pico-engine-ui/box
-/sky/event/<ECI>/<EID>/engine-ui/box?name=Bob&backgroundColor=%2300FFFF
+/sky/event/<ECI>/<EID>/engine_ui/box?name=Pico&backgroundColor=%2300FFFF
 ```
 
 Where `<ECI>` means put an event channel identifier here, 
 and `<EID>` means provide an event identifier here,
 and `%23` is the encoding of the `#` symbol
  
+These commands would show the `ui-context` (which pico-debug has
+alread done), show the basic UI information about the root pico,
+and change the color of the root pico to cyan.
+(You can change it back with a similar command, using
+the color from its `box`.)
+
 ## Principles of Operation
 
 The root pico will have the `pico-debug` ruleset installed in it.
@@ -146,4 +152,15 @@ The next lines compute (using KRL operators):
 the children of the current pico (assigned to local name "c"),
 the type of the result ("Array"),
 the number of children
+
+## Setting an ECI from a list of children
+
+In the `c.length()` command, if the length I was given was 12
+and the last pico that I had created was named "John,"
+these commands would position to that pico:
+
+```
+j=c[11]
+eci@j
+```
 
