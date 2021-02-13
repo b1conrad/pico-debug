@@ -59,10 +59,10 @@ and `<EID>` means provide an event identifier here,
 and `%23` is the encoding of the `#` symbol
  
 These commands would show the `ui-context` (which pico-debug has
-alread done), show the basic UI information about the root pico,
-and change the color of the root pico to cyan.
-(You can change it back with a similar command, using
-the color from its `box`.)
+already done), show the basic UI information about the root pico,
+and change the color of the root pico to cyan
+(you can change it back with a similar command, using
+the color from its `box`).
 
 ## Some commands
 
@@ -113,8 +113,8 @@ query box
 event engine_ui/new?name=John&backgroundColor=%23CCCCCC
 ```
 
-The first example assumes that the current RID is `io.picolabs.wrangler`
-and queries for the children of the current pico.
+The first example assumes that the current RID is `io.picolabs.pico-engine-ui`
+and queries for the "box" of the current pico.
 
 The second example creates a new child pico named "John" with a gray background.
 
@@ -151,7 +151,7 @@ This is saved under the local (to pico-debug) name of "b".
 The next lines compute (using KRL operators):
 the children of the current pico (assigned to local name "c"),
 the type of the result ("Array"),
-the number of children
+and the number of children.
 
 ### Setting an ECI from a list of children
 
