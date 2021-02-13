@@ -32,7 +32,21 @@ When prompted, enter a URI path for a pico hosted on that engine,
 and that request will be sent to the engine running at the given host:port
 and the response will be displayed in-line, and you will be prompted again.
 
-### Some queries and events to try
+## Principles of Operation
+
+The root pico will have the `pico-debug` ruleset installed in it.
+A child pico will be created for the root pico which will
+have the `pico-debug-session` ruleset in it.
+These rulesets and the extra child pico will be removed when
+`pico-debug` terminates normally.
+
+When the `pico-debug-session` ruleset is installed,
+it creates a child pico and installs the `pico-debug-krl` ruleset in it.
+As KRL expressions are entered by you, they are passed to this
+ruleset which creates a KRL ruleset which is installed
+in the root pico and a query sent there produces the result.
+
+## Some queries and events to try
 
 ```
 /api/ui-context
@@ -50,21 +64,7 @@ and change the color of the root pico to cyan.
 (You can change it back with a similar command, using
 the color from its `box`.)
 
-## Principles of Operation
-
-The root pico will have the `pico-debug` ruleset installed in it.
-A child pico will be created for the root pico which will
-have the `pico-debug-session` ruleset in it.
-These rulesets and the extra child pico will be removed when
-`pico-debug` terminates normally.
-
-When the `pico-debug-session` ruleset is installed,
-it creates a child pico and installs the `pico-debug-krl` ruleset in it.
-As KRL expressions are entered by you, they are passed to this
-ruleset which creates a KRL ruleset which is installed
-in the root pico and a query sent there produces the result.
-
-### Some commands
+## Some commands
 
 ```
 eci ckj5q44eq00017a2rcvxs8evv Back to root
@@ -153,7 +153,7 @@ the children of the current pico (assigned to local name "c"),
 the type of the result ("Array"),
 the number of children
 
-## Setting an ECI from a list of children
+### Setting an ECI from a list of children
 
 In the `c.length()` command, if the length I was given was 12
 and the last pico that I had created was named "John,"
